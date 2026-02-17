@@ -7,6 +7,7 @@ public class NoteSpawner : MonoBehaviour
     public GameObject notePrefab;
     public Transform[] lanePositions;
     public Transform judgementLine;
+    public InputManager inputManager;
 
     [Header("Spawning Settings")]
     public float scrollSpeed = 5f;
@@ -31,6 +32,11 @@ public class NoteSpawner : MonoBehaviour
         {
             Debug.LogError("No chart data loaded!");
             return;
+        }
+
+        if (inputManager == null)
+        {
+            inputManager = FindObjectOfType<InputManager>();
         }
 
         // Load and prepare the audio clip
@@ -133,6 +139,12 @@ public class NoteSpawner : MonoBehaviour
 
     void MoveNotes()
     {
+        // Use the largest miss window to determine when a note is truly missed
+        float maxMissDistance = Mathf.Max(
+            inputManager != null ? inputManager.missWindow : 0.2f,
+            inputManager != null ? inputManager.stickMissWindow : 0.3f
+        ) * scrollSpeed;
+
         for (int i = activeNotes.Count - 1; i >= 0; i--)
         {
             if (activeNotes[i] == null)
@@ -143,7 +155,9 @@ public class NoteSpawner : MonoBehaviour
 
             activeNotes[i].transform.position += Vector3.down * scrollSpeed * Time.deltaTime;
 
-            if (activeNotes[i].transform.position.y < judgementLine.position.y - 2f)
+            // Only mark as miss once the note has passed beyond the miss window
+            float distancePastLine = judgementLine.position.y - activeNotes[i].transform.position.y;
+            if (distancePastLine > maxMissDistance)
             {
                 NoteVisual noteVisual = activeNotes[i].GetComponent<NoteVisual>();
                 if (noteVisual != null)

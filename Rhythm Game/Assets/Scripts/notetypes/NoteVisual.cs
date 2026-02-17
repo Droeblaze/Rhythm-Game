@@ -180,6 +180,13 @@ public class NoteVisual : MonoBehaviour
     public void MarkAsMiss()
     {
         isActive = false;
+        
+        // Notify InputManager about the miss
+        if (inputManager != null)
+        {
+            inputManager.OnNoteMissed(this);
+        }
+        
         // Play miss animation
         Destroy(gameObject, 0.2f);
     }

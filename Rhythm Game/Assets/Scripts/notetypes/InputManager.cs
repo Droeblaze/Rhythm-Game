@@ -8,11 +8,17 @@ public class InputManager : MonoBehaviour
     public Transform judgementLine;
     public JudgementDisplay judgementDisplay;
 
-    [Header("Timing Windows")]
+    [Header("Timing Windows (Buttons - Lanes 3-5)")]
     public float perfectWindow = 0.05f;   // ±50ms for perfect
     public float greatWindow = 0.1f;      // ±100ms for great
     public float goodWindow = 0.15f;      // ±150ms for good
     public float missWindow = 0.2f;       // ±200ms, beyond this is a miss
+
+    [Header("Timing Windows (Stick - Lanes 0-2)")]
+    public float stickPerfectWindow = 0.08f;   // ±80ms for perfect
+    public float stickGreatWindow = 0.15f;     // ±150ms for great
+    public float stickGoodWindow = 0.2f;       // ±200ms for good
+    public float stickMissWindow = 0.3f;       // ±300ms, beyond this is a miss
 
     [Header("Stick Settings")]
     public float stickDeadzone = 0.5f; // Threshold for stick input
@@ -47,9 +53,9 @@ public class InputManager : MonoBehaviour
     private Dictionary<int, List<NoteVisual>> notesInLane = new Dictionary<int, List<NoteVisual>>();
     private Dictionary<string, bool> previousTriggerStates = new Dictionary<string, bool>();
 
-    // Previous stick state for detecting new inputs
-    private Vector2 previousStick;
-    private bool wasStickNeutral = true;
+    // Previous stick direction for detecting direction changes
+    private int previousHorizDir = 0;
+    private int previousVertDir = 0;
 
     void Start()
     {
@@ -70,29 +76,26 @@ public class InputManager : MonoBehaviour
     {
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
-        Vector2 currentStick = new Vector2(horizontal, vertical);
 
-        // Check if stick just moved from neutral position
-        bool isStickActive = currentStick.magnitude >= stickDeadzone;
-        bool isNewInput = wasStickNeutral && isStickActive;
+        // Quantize to -1, 0, or 1 based on deadzone
+        int horizDir = horizontal < -stickDeadzone ? -1 : (horizontal > stickDeadzone ? 1 : 0);
+        int vertDir = vertical < -stickDeadzone ? -1 : (vertical > stickDeadzone ? 1 : 0);
 
-        if (isNewInput)
+        // Fire input whenever the quantized direction changes (not just from neutral)
+        bool directionChanged = (horizDir != previousHorizDir) || (vertDir != previousVertDir);
+
+        if (directionChanged && (horizDir != 0 || vertDir != 0))
         {
-            // Determine which direction was pressed
-            DetectStickDirection(horizontal, vertical);
+            DetectStickDirection(horizDir, vertDir);
         }
 
         // Update state for next frame
-        wasStickNeutral = !isStickActive;
-        previousStick = currentStick;
+        previousHorizDir = horizDir;
+        previousVertDir = vertDir;
     }
 
-    void DetectStickDirection(float h, float v)
+    void DetectStickDirection(int horizDir, int vertDir)
     {
-        // Normalize to -1, 0, or 1
-        int horizDir = h < -stickDeadzone ? -1 : (h > stickDeadzone ? 1 : 0);
-        int vertDir = v < -stickDeadzone ? -1 : (v > stickDeadzone ? 1 : 0);
-
         // Lane 0 - Left stick (horizontal = -1)
         if (horizDir == -1)
         {
@@ -111,8 +114,6 @@ public class InputManager : MonoBehaviour
                 CheckNoteHit(1, StickDirection.Up);        // Up
             else if (vertDir == -1)
                 CheckNoteHit(1, StickDirection.Down);      // Down
-            // UpDown would require both pressed, but on digital stick that's tricky
-            // You might need to handle this separately with button combos
         }
 
         // Lane 2 - Right stick (horizontal = 1)
@@ -211,7 +212,7 @@ public class InputManager : MonoBehaviour
 
             float distance = Mathf.Abs(note.transform.position.y - judgementLine.position.y);
 
-            if (distance < closestDistance && distance <= missWindow * 5f)
+            if (distance < closestDistance && distance <= stickMissWindow * 5f)
             {
                 closestDistance = distance;
                 closestNote = note;
@@ -220,7 +221,7 @@ public class InputManager : MonoBehaviour
 
         if (closestNote != null)
         {
-            HitNote(closestNote, closestDistance);
+            HitNote(closestNote, closestDistance, true);
         }
     }
 
@@ -246,22 +247,27 @@ public class InputManager : MonoBehaviour
 
         if (closestNote != null)
         {
-            HitNote(closestNote, closestDistance);
+            HitNote(closestNote, closestDistance, false);
         }
     }
 
-    void HitNote(NoteVisual note, float distance)
+    void HitNote(NoteVisual note, float distance, bool isStickLane)
     {
         float timing = distance / noteSpawner.scrollSpeed;
 
+        float pWindow = isStickLane ? stickPerfectWindow : perfectWindow;
+        float grWindow = isStickLane ? stickGreatWindow : greatWindow;
+        float goWindow = isStickLane ? stickGoodWindow : goodWindow;
+        float mWindow = isStickLane ? stickMissWindow : missWindow;
+
         string judgement = "Miss";
-        if (timing <= perfectWindow)
+        if (timing <= pWindow)
             judgement = "Perfect!";
-        else if (timing <= greatWindow)
+        else if (timing <= grWindow)
             judgement = "Great!";
-        else if (timing <= goodWindow)
+        else if (timing <= goWindow)
             judgement = "Good";
-        else if (timing <= missWindow)
+        else if (timing <= mWindow)
             judgement = "OK";
 
         Debug.Log($"Lane {note.data.laneIndex} Hit! Judgement: {judgement} (timing: {timing:F3}s)");
@@ -274,6 +280,24 @@ public class InputManager : MonoBehaviour
 
         notesInLane[note.data.laneIndex].Remove(note);
         note.MarkAsHit();
+    }
+
+    // NEW METHOD: Called when a note is missed (passes judgement line)
+    public void OnNoteMissed(NoteVisual note)
+    {
+        Debug.Log($"Lane {note.data.laneIndex} Missed!");
+
+        // Display miss judgement
+        if (judgementDisplay != null)
+        {
+            judgementDisplay.ShowJudgement("Miss");
+        }
+
+        // Remove from tracking
+        if (notesInLane.ContainsKey(note.data.laneIndex))
+        {
+            notesInLane[note.data.laneIndex].Remove(note);
+        }
     }
 
     public void RegisterNote(NoteVisual note)

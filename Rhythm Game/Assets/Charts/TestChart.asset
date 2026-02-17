@@ -599,601 +599,613 @@ MonoBehaviour:
     holdDuration: 0
   - timestamp: 15.157894
     noteType: 0
-    laneIndex: 4
-    stickDirection: 1
+    laneIndex: 0
+    stickDirection: 2
     buttonRow: 0
     holdDuration: 0
-  - timestamp: 15.315789
+  - timestamp: 15.157894
     noteType: 0
     laneIndex: 3
-    stickDirection: 3
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 15.315789
     noteType: 0
-    laneIndex: 0
-    stickDirection: 2
+    laneIndex: 3
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 15.473683
     noteType: 0
-    laneIndex: 3
+    laneIndex: 2
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 15.631578
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 15.789473
     noteType: 0
     laneIndex: 5
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 15.789473
-    noteType: 0
-    laneIndex: 2
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 15.947368
     noteType: 0
-    laneIndex: 5
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 16.263157
-    noteType: 0
     laneIndex: 0
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 16.105263
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 16.263157
     noteType: 0
     laneIndex: 3
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 16.421051
     noteType: 0
-    laneIndex: 3
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 16.736841
-    noteType: 0
     laneIndex: 2
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 16.578947
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 16.736841
     noteType: 0
     laneIndex: 5
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 16.894735
     noteType: 0
-    laneIndex: 5
+    laneIndex: 0
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 17.052631
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 17.210526
     noteType: 0
     laneIndex: 3
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 17.210526
-    noteType: 0
-    laneIndex: 0
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 17.36842
     noteType: 0
-    laneIndex: 3
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 17.68421
-    noteType: 0
     laneIndex: 2
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 17.526316
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 17.68421
     noteType: 0
     laneIndex: 5
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 17.842104
     noteType: 0
-    laneIndex: 5
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 18.157894
-    noteType: 0
     laneIndex: 0
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 18
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 18.157894
     noteType: 0
     laneIndex: 3
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 18.315788
     noteType: 0
-    laneIndex: 3
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 18.631578
-    noteType: 0
     laneIndex: 2
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 18.473684
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 18.631578
     noteType: 0
     laneIndex: 5
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 18.789473
     noteType: 0
-    laneIndex: 5
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 19.105263
-    noteType: 0
     laneIndex: 0
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 18.947369
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 19.105263
     noteType: 0
     laneIndex: 3
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 19.263157
     noteType: 0
-    laneIndex: 3
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 19.578947
-    noteType: 0
     laneIndex: 2
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 19.421053
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 19.578947
     noteType: 0
     laneIndex: 5
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 19.736841
     noteType: 0
-    laneIndex: 5
+    laneIndex: 0
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 19.894737
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 20.052631
     noteType: 0
     laneIndex: 3
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 20.052631
-    noteType: 0
-    laneIndex: 0
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 20.210526
     noteType: 0
-    laneIndex: 3
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 20.526316
-    noteType: 0
     laneIndex: 2
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 20.368422
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 20.526316
     noteType: 0
     laneIndex: 5
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 20.68421
     noteType: 0
-    laneIndex: 5
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 21
-    noteType: 0
     laneIndex: 0
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 20.842106
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 21
     noteType: 0
     laneIndex: 3
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 21.157894
-    noteType: 0
-    laneIndex: 3
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 21.473682
-    noteType: 0
-    laneIndex: 5
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 21.473682
+  - timestamp: 21.157892
     noteType: 0
     laneIndex: 2
     stickDirection: 2
-    buttonRow: 2
+    buttonRow: 0
     holdDuration: 0
-  - timestamp: 21.631578
+  - timestamp: 21.31579
     noteType: 0
     laneIndex: 5
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 21.947367
+  - timestamp: 21.473684
     noteType: 0
-    laneIndex: 3
-    stickDirection: 3
+    laneIndex: 5
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 21.947367
+  - timestamp: 21.631577
     noteType: 0
     laneIndex: 0
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 21.789474
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 21.947369
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 22.10526
     noteType: 0
-    laneIndex: 3
+    laneIndex: 2
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 22.263159
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 22.421051
     noteType: 0
     laneIndex: 5
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 22.421051
-    noteType: 0
-    laneIndex: 2
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 22.578945
-    noteType: 0
-    laneIndex: 5
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 22.894733
+  - timestamp: 22.578947
     noteType: 0
     laneIndex: 0
     stickDirection: 2
-    buttonRow: 2
+    buttonRow: 0
     holdDuration: 0
-  - timestamp: 22.894733
+  - timestamp: 22.736841
     noteType: 0
     laneIndex: 3
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 23.052628
+  - timestamp: 22.894737
     noteType: 0
     laneIndex: 3
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 23.36842
+  - timestamp: 23.052631
     noteType: 0
     laneIndex: 2
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 23.210526
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 23.36842
     noteType: 0
     laneIndex: 5
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 23.526314
-    noteType: 0
-    laneIndex: 5
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 23.842102
-    noteType: 0
-    laneIndex: 3
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 23.842102
+  - timestamp: 23.526316
     noteType: 0
     laneIndex: 0
     stickDirection: 2
-    buttonRow: 2
+    buttonRow: 0
     holdDuration: 0
-  - timestamp: 23.999996
+  - timestamp: 23.68421
     noteType: 0
     laneIndex: 3
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 24.315788
+  - timestamp: 23.842104
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 24
     noteType: 0
     laneIndex: 2
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 24.157894
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 24.315788
     noteType: 0
     laneIndex: 5
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 24.473682
-    noteType: 0
-    laneIndex: 5
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 24.78947
+  - timestamp: 24.473684
     noteType: 0
     laneIndex: 0
     stickDirection: 2
-    buttonRow: 2
+    buttonRow: 0
     holdDuration: 0
-  - timestamp: 24.78947
+  - timestamp: 24.631578
     noteType: 0
     laneIndex: 3
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 24.947365
+  - timestamp: 24.789473
     noteType: 0
     laneIndex: 3
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 24.947369
+    noteType: 0
+    laneIndex: 2
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 25.105263
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 25.263157
     noteType: 0
     laneIndex: 5
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 25.263157
-    noteType: 0
-    laneIndex: 2
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 25.421051
-    noteType: 0
-    laneIndex: 5
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 25.73684
-    noteType: 0
-    laneIndex: 3
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 25.73684
+  - timestamp: 25.421053
     noteType: 0
     laneIndex: 0
     stickDirection: 2
-    buttonRow: 2
+    buttonRow: 0
     holdDuration: 0
-  - timestamp: 25.894733
+  - timestamp: 25.578947
     noteType: 0
     laneIndex: 3
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 25.736841
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 25.894737
+    noteType: 0
+    laneIndex: 2
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 26.052631
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 26.210526
     noteType: 0
     laneIndex: 5
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 26.210526
-    noteType: 0
-    laneIndex: 2
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 26.36842
-    noteType: 0
-    laneIndex: 5
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 26.68421
-    noteType: 0
-    laneIndex: 3
-    stickDirection: 3
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 26.68421
+  - timestamp: 26.368422
     noteType: 0
     laneIndex: 0
     stickDirection: 2
-    buttonRow: 2
+    buttonRow: 0
     holdDuration: 0
-  - timestamp: 26.842104
+  - timestamp: 26.526314
     noteType: 0
     laneIndex: 3
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 27.157894
+  - timestamp: 26.684208
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 26.842106
     noteType: 0
     laneIndex: 2
     stickDirection: 2
-    buttonRow: 2
+    buttonRow: 0
     holdDuration: 0
-  - timestamp: 27.157894
+  - timestamp: 26.999998
     noteType: 0
     laneIndex: 5
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 27.315788
+  - timestamp: 27.157892
     noteType: 0
     laneIndex: 5
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 27.631577
+  - timestamp: 27.31579
     noteType: 0
     laneIndex: 0
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 27.473682
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 27.631577
     noteType: 0
     laneIndex: 3
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 27.78947
-    noteType: 0
-    laneIndex: 3
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 28.105263
+  - timestamp: 27.789473
     noteType: 0
     laneIndex: 2
     stickDirection: 2
-    buttonRow: 2
+    buttonRow: 0
     holdDuration: 0
-  - timestamp: 28.105263
+  - timestamp: 27.947367
     noteType: 0
     laneIndex: 5
-    stickDirection: 2
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 28.10526
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 28.263157
     noteType: 0
-    laneIndex: 5
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 28.578945
-    noteType: 0
-    laneIndex: 3
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 28.578945
-    noteType: 0
     laneIndex: 0
     stickDirection: 2
-    buttonRow: 2
+    buttonRow: 0
     holdDuration: 0
-  - timestamp: 28.73684
+  - timestamp: 28.421051
     noteType: 0
     laneIndex: 3
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 29.052631
+  - timestamp: 28.578945
     noteType: 0
-    laneIndex: 5
-    stickDirection: 2
+    laneIndex: 3
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 29.052631
+  - timestamp: 28.736841
     noteType: 0
     laneIndex: 2
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 28.894735
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 29.05263
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 29.210526
     noteType: 0
-    laneIndex: 5
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 29.526314
-    noteType: 0
     laneIndex: 0
     stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 29.36842
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 29.526314
     noteType: 0
     laneIndex: 3
-    stickDirection: 2
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
-  - timestamp: 29.684208
-    noteType: 0
-    laneIndex: 3
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 30
+  - timestamp: 29.68421
     noteType: 0
     laneIndex: 2
     stickDirection: 2
-    buttonRow: 2
+    buttonRow: 0
     holdDuration: 0
-  - timestamp: 30
+  - timestamp: 29.842104
     noteType: 0
     laneIndex: 5
-    stickDirection: 2
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 29.999998
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
     buttonRow: 2
     holdDuration: 0
   - timestamp: 30.157894
     noteType: 0
-    laneIndex: 5
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 30.473682
-    noteType: 0
-    laneIndex: 3
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 0
-  - timestamp: 30.473682
-    noteType: 0
     laneIndex: 0
-    stickDirection: 2
-    buttonRow: 2
+    stickDirection: 1
+    buttonRow: 0
     holdDuration: 0
-  - timestamp: 30.631577
+  - timestamp: 30.315788
+    noteType: 0
+    laneIndex: 1
+    stickDirection: 2
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 30.473682
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 30.473682
     noteType: 0
     laneIndex: 3
-    stickDirection: 2
-    buttonRow: 2
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 30.473682
+    noteType: 0
+    laneIndex: 4
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 30.473682
+    noteType: 0
+    laneIndex: 2
+    stickDirection: 1
+    buttonRow: 0
     holdDuration: 0

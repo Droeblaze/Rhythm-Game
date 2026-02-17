@@ -1337,7 +1337,8 @@ MonoBehaviour:
   - {fileID: 428173865}
   - {fileID: 1928183048}
   judgementLine: {fileID: 140439801}
-  scrollSpeed: 10
+  inputManager: {fileID: 0}
+  scrollSpeed: 12
   spawnDistance: 10
   audioStartDelay: 3
   chartData: {fileID: 11400000, guid: 1f6e27abf27d2a04fb0c4ba71a28f92a, type: 2}
@@ -1375,6 +1376,10 @@ MonoBehaviour:
   greatWindow: 0.1
   goodWindow: 0.15
   missWindow: 0.2
+  stickPerfectWindow: 0.08
+  stickGreatWindow: 0.15
+  stickGoodWindow: 0.2
+  stickMissWindow: 0.3
   stickDeadzone: 0.5
   lane3TopIsButton: 1
   lane3TopButton: 3
