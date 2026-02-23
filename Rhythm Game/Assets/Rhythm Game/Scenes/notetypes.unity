@@ -1341,7 +1341,7 @@ MonoBehaviour:
   scrollSpeed: 12
   spawnDistance: 10
   audioStartDelay: 3
-  chartData: {fileID: 11400000, guid: 1f6e27abf27d2a04fb0c4ba71a28f92a, type: 2}
+  chartData: {fileID: 11400000, guid: 67f998a4e91121a4faa0e73b29d31b4a, type: 2}
 --- !u!4 &1456298306
 Transform:
   m_ObjectHideFlags: 0

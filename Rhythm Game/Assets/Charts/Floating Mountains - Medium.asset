@@ -1,0 +1,221 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 018f60730b9877b4083c6f451ae76f17, type: 3}
+  m_Name: Floating Mountains - Medium
+  m_EditorClassIdentifier: Assembly-CSharp::ChartData
+  songAudio: {fileID: 8300000, guid: 0d2e81fb68927284db90a3482ba5845a, type: 3}
+  bpm: 120
+  notes:
+  - timestamp: 0
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 0.25
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 0.5
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 0.75
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 1
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 1.25
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 1.5
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 1.75
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 2
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 2.25
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 2.5
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 2.75
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 3
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 3.25
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 3.5
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 3.75
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 4
+    noteType: 0
+    laneIndex: 4
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 4.25
+    noteType: 0
+    laneIndex: 4
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 4.5
+    noteType: 0
+    laneIndex: 4
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 4.75
+    noteType: 0
+    laneIndex: 4
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 5
+    noteType: 0
+    laneIndex: 4
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 5.25
+    noteType: 0
+    laneIndex: 4
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 5.5
+    noteType: 0
+    laneIndex: 4
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 5.75
+    noteType: 0
+    laneIndex: 4
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 6
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 1
+    holdDuration: 0
+  - timestamp: 6.25
+    noteType: 0
+    laneIndex: 4
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 6.5
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 1
+    holdDuration: 0
+  - timestamp: 6.75
+    noteType: 0
+    laneIndex: 4
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 7
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 1
+    holdDuration: 0
+  - timestamp: 7.125
+    noteType: 0
+    laneIndex: 0
+    stickDirection: 1
+    buttonRow: 1
+    holdDuration: 0
+  - timestamp: 7.375
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 7.375
+    noteType: 0
+    laneIndex: 2
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 7.625
+    noteType: 0
+    laneIndex: 0
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
+  - timestamp: 7.75
+    noteType: 0
+    laneIndex: 2
+    stickDirection: 1
+    buttonRow: 2
+    holdDuration: 0
