@@ -34,9 +34,10 @@ public class ChartEditor : EditorWindow
     private NoteType selectedNoteType = NoteType.Tap;
     private StickDirection selectedStickDirection = StickDirection.Horizontal;
     private ButtonRow selectedButtonRow = ButtonRow.Top;
+    private float selectedHoldDuration = 1f;
 
     // Grid snapping
-    private int beatDivision = 4; // Snap to 1/4 beats
+    private int beatDivision = 4;
 
     // Grid division options
     private static readonly string[] beatDivisionLabels = new string[]
@@ -65,6 +66,19 @@ public class ChartEditor : EditorWindow
     private List<NoteData> selectedNotes = new List<NoteData>();
     private List<NoteData> clipboard = new List<NoteData>();
 
+    // BPM change editing
+    private bool showBpmChanges = false;
+    private float newBpmChangeTime = 0f;
+    private float newBpmChangeValue = 120f;
+    private Vector2 bpmScrollPosition;
+
+    // BPM change marker selection (for deletion)
+    private int selectedBpmChangeIndex = -1;
+
+    // Tools panel scroll
+    private Vector2 toolsPanelScroll;
+    private float toolsPanelWidth = 320f;
+
     [MenuItem("Window/Chart Editor")]
     public static void ShowWindow()
     {
@@ -73,7 +87,6 @@ public class ChartEditor : EditorWindow
 
     void OnEnable()
     {
-        // Create audio source for preview
         GameObject audioObj = GameObject.Find("ChartEditorAudio");
         if (audioObj == null)
         {
@@ -87,7 +100,6 @@ public class ChartEditor : EditorWindow
             previewAudioSource = audioObj.AddComponent<AudioSource>();
         }
 
-        // Create a separate audio source for click sounds so they layer on top of the song
         AudioSource[] sources = audioObj.GetComponents<AudioSource>();
         if (sources.Length > 1)
         {
@@ -101,7 +113,6 @@ public class ChartEditor : EditorWindow
         clickAudioSource.playOnAwake = false;
         clickAudioSource.loop = false;
 
-        // Generate a short click sound procedurally (no external asset needed)
         clickSound = GenerateClickSound();
 
         EditorApplication.update += OnEditorUpdate;
@@ -119,7 +130,6 @@ public class ChartEditor : EditorWindow
         {
             songTime = previewAudioSource.time;
 
-            // Play click sounds on notes as the playhead crosses them
             if (noteClickEnabled && currentChart != null && currentChart.notes != null)
             {
                 PlayNoteClicks();
@@ -131,17 +141,14 @@ public class ChartEditor : EditorWindow
 
     void PlayNoteClicks()
     {
-        // Find any notes that the playhead just crossed since the last update
         for (int i = 0; i < currentChart.notes.Count; i++)
         {
             NoteData note = currentChart.notes[i];
 
-            // Skip notes we've already clicked or that are in the future
             if (i <= lastClickedNoteIndex) continue;
 
             if (note.timestamp <= (float)songTime)
             {
-                // Play the click
                 if (clickAudioSource != null && clickSound != null)
                 {
                     clickAudioSource.volume = clickVolume;
@@ -151,7 +158,6 @@ public class ChartEditor : EditorWindow
             }
             else
             {
-                // Notes are sorted, so no more to check
                 break;
             }
         }
@@ -159,9 +165,8 @@ public class ChartEditor : EditorWindow
 
     AudioClip GenerateClickSound()
     {
-        // Generate a short, punchy click sound (a quick sine burst at 1000Hz)
         int sampleRate = 44100;
-        float duration = 0.03f; // 30ms click
+        float duration = 0.03f;
         int sampleCount = Mathf.CeilToInt(sampleRate * duration);
         float[] samples = new float[sampleCount];
 
@@ -169,7 +174,7 @@ public class ChartEditor : EditorWindow
         for (int i = 0; i < sampleCount; i++)
         {
             float t = (float)i / sampleRate;
-            float envelope = 1f - ((float)i / sampleCount); // Linear fade out
+            float envelope = 1f - ((float)i / sampleCount);
             samples[i] = Mathf.Sin(2f * Mathf.PI * frequency * t) * envelope;
         }
 
@@ -180,18 +185,29 @@ public class ChartEditor : EditorWindow
 
     void OnGUI()
     {
-        DrawToolbar();
+        // Side-by-side layout: tools on the left, timeline grid on the right
+        EditorGUILayout.BeginHorizontal();
+
+        // === LEFT PANEL: Tools & Controls ===
+        DrawToolsPanel();
+
+        // === RIGHT PANEL: Timeline Grid ===
         DrawTimeline();
+
+        EditorGUILayout.EndHorizontal();
+
         HandleKeyboardShortcuts();
     }
 
-    void DrawToolbar()
+    void DrawToolsPanel()
     {
-        EditorGUILayout.BeginVertical(EditorStyles.toolbar);
+        Rect panelRect = EditorGUILayout.BeginVertical(GUILayout.Width(toolsPanelWidth));
+        EditorGUI.DrawRect(new Rect(panelRect.x, panelRect.y, toolsPanelWidth, position.height), new Color(0.18f, 0.18f, 0.18f));
+
+        toolsPanelScroll = EditorGUILayout.BeginScrollView(toolsPanelScroll, GUILayout.Width(toolsPanelWidth), GUILayout.Height(position.height));
 
         // Chart selection
-        EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("Chart:", GUILayout.Width(50));
+        EditorGUILayout.LabelField("Chart", EditorStyles.boldLabel);
         ChartData newChart = (ChartData)EditorGUILayout.ObjectField(currentChart, typeof(ChartData), false);
         if (newChart != currentChart)
         {
@@ -202,7 +218,6 @@ public class ChartEditor : EditorWindow
                 previewAudioSource.clip = audioClip;
             }
         }
-        EditorGUILayout.EndHorizontal();
 
         if (currentChart == null)
         {
@@ -211,11 +226,16 @@ public class ChartEditor : EditorWindow
             {
                 CreateNewChart();
             }
+            EditorGUILayout.EndScrollView();
             EditorGUILayout.EndVertical();
             return;
         }
 
-        // Playback controls
+        EditorGUILayout.Space(6);
+
+        // --- Playback ---
+        EditorGUILayout.LabelField("Playback", EditorStyles.boldLabel);
+
         EditorGUILayout.BeginHorizontal();
         if (GUILayout.Button(isPlaying ? "? Pause" : "? Play", GUILayout.Width(80)))
         {
@@ -225,10 +245,12 @@ public class ChartEditor : EditorWindow
         {
             StopPlayback();
         }
+        EditorGUILayout.EndHorizontal();
 
-        EditorGUILayout.LabelField($"Time: {songTime:F2}s", GUILayout.Width(100));
+        EditorGUILayout.LabelField($"Time: {songTime:F2}s");
 
         // Playback speed
+        EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("Speed:", GUILayout.Width(45));
         float newSpeed = speedValues[EditorGUILayout.IntPopup(
             System.Array.IndexOf(speedValues, playbackSpeed) >= 0 ? System.Array.IndexOf(speedValues, playbackSpeed) : 3,
@@ -241,14 +263,12 @@ public class ChartEditor : EditorWindow
                 previewAudioSource.pitch = playbackSpeed;
             }
         }
-
         EditorGUILayout.EndHorizontal();
 
         // Seek controls
         EditorGUILayout.BeginHorizontal();
         float maxTime = audioClip != null ? audioClip.length : 60f;
 
-        // Jump to start / back / forward / end buttons
         if (GUILayout.Button("|<", GUILayout.Width(30)))
         {
             SeekTo(0f);
@@ -261,15 +281,6 @@ public class ChartEditor : EditorWindow
         {
             SeekByBeats(-1);
         }
-
-        // Time scrubber slider
-        EditorGUI.BeginChangeCheck();
-        float scrubTime = EditorGUILayout.Slider((float)songTime, 0f, maxTime);
-        if (EditorGUI.EndChangeCheck())
-        {
-            SeekTo(scrubTime);
-        }
-
         if (GUILayout.Button(">", GUILayout.Width(30)))
         {
             SeekByBeats(1);
@@ -284,27 +295,36 @@ public class ChartEditor : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
 
+        EditorGUI.BeginChangeCheck();
+        float scrubTime = EditorGUILayout.Slider((float)songTime, 0f, maxTime);
+        if (EditorGUI.EndChangeCheck())
+        {
+            SeekTo(scrubTime);
+        }
+
         // Beat position display
         if (currentChart.bpm > 0)
         {
-            float beatsPerSecond = currentChart.bpm / 60f;
-            float currentBeat = (float)songTime * beatsPerSecond;
+            float currentBeat = currentChart.TimeToBeat((float)songTime);
+            float activeBpm = currentChart.GetBpmAtTime((float)songTime);
             int measure = Mathf.FloorToInt(currentBeat / 4f) + 1;
             float beatInMeasure = (currentBeat % 4f) + 1f;
-            EditorGUILayout.LabelField($"Position: Measure {measure}, Beat {beatInMeasure:F2}  |  Beat {currentBeat:F2}  |  BPM: {currentChart.bpm}", EditorStyles.miniLabel);
+            EditorGUILayout.LabelField(
+                $"M{measure} Beat {beatInMeasure:F2} | BPM: {activeBpm}",
+                EditorStyles.miniLabel);
         }
 
-        // Note click toggle
-        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.Space(6);
+
+        // --- Note Click / Metronome ---
+        EditorGUILayout.LabelField("Metronome", EditorStyles.boldLabel);
+
         noteClickEnabled = EditorGUILayout.Toggle("Note Click", noteClickEnabled);
         if (noteClickEnabled)
         {
-            EditorGUILayout.LabelField("Volume:", GUILayout.Width(50));
-            clickVolume = EditorGUILayout.Slider(clickVolume, 0f, 1f);
+            clickVolume = EditorGUILayout.Slider("Volume", clickVolume, 0f, 1f);
         }
-        EditorGUILayout.EndHorizontal();
 
-        // Custom click sound (optional override)
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("Click Sound:", GUILayout.Width(80));
         AudioClip customClick = (AudioClip)EditorGUILayout.ObjectField(
@@ -320,8 +340,9 @@ public class ChartEditor : EditorWindow
         }
         EditorGUILayout.EndHorizontal();
 
-        // Note placement tools
-        EditorGUILayout.Space();
+        EditorGUILayout.Space(6);
+
+        // --- Note Placement ---
         EditorGUILayout.LabelField("Note Placement", EditorStyles.boldLabel);
 
         EditorGUILayout.BeginHorizontal();
@@ -331,7 +352,12 @@ public class ChartEditor : EditorWindow
 
         selectedNoteType = (NoteType)EditorGUILayout.EnumPopup("Note Type:", selectedNoteType);
 
-        // Show appropriate options based on lane
+        if (selectedNoteType == NoteType.Hold)
+        {
+            selectedHoldDuration = EditorGUILayout.FloatField("Hold Duration (s):", selectedHoldDuration);
+            selectedHoldDuration = Mathf.Max(0.1f, selectedHoldDuration);
+        }
+
         if (selectedLane <= 2)
         {
             selectedStickDirection = (StickDirection)EditorGUILayout.EnumPopup("Direction:", selectedStickDirection);
@@ -341,50 +367,166 @@ public class ChartEditor : EditorWindow
             selectedButtonRow = (ButtonRow)EditorGUILayout.EnumPopup("Button Row:", selectedButtonRow);
         }
 
-        // Grid settings
+        EditorGUILayout.Space(6);
+
+        // --- Grid Settings ---
+        EditorGUILayout.LabelField("Grid", EditorStyles.boldLabel);
+
         EditorGUILayout.BeginHorizontal();
-        EditorGUILayout.LabelField("Beat Division:", GUILayout.Width(100));
+        EditorGUILayout.LabelField("Beat Div:", GUILayout.Width(60));
         beatDivision = EditorGUILayout.IntPopup(beatDivision, beatDivisionLabels, beatDivisionValues);
         EditorGUILayout.EndHorizontal();
 
-        // Zoom
         EditorGUILayout.BeginHorizontal();
         EditorGUILayout.LabelField("Zoom:", GUILayout.Width(50));
-        zoom = EditorGUILayout.Slider(zoom, 0.5f, 3f);
+        zoom = EditorGUILayout.Slider(zoom, 0.1f, 10f);
         EditorGUILayout.EndHorizontal();
 
-        // Selection info
+        EditorGUILayout.Space(6);
+
+        // --- Selection Info ---
         if (selectedNotes.Count > 0)
         {
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField($"Selected: {selectedNotes.Count} notes | Ctrl+C Copy, Ctrl+V Paste, Del Delete", EditorStyles.miniLabel);
+            EditorGUILayout.LabelField("Selection", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField($"{selectedNotes.Count} notes selected", EditorStyles.miniLabel);
+            EditorGUILayout.LabelField("Ctrl+C Copy | Ctrl+V Paste | Del Delete", EditorStyles.miniLabel);
         }
         if (clipboard.Count > 0)
         {
             EditorGUILayout.LabelField($"Clipboard: {clipboard.Count} notes", EditorStyles.miniLabel);
         }
 
+        EditorGUILayout.Space(6);
+
+        // --- BPM Changes ---
+        showBpmChanges = EditorGUILayout.Foldout(showBpmChanges, "BPM Changes", true, EditorStyles.foldoutHeader);
+        if (showBpmChanges)
+        {
+            DrawBpmChangesPanel();
+        }
+
+        EditorGUILayout.EndScrollView();
         EditorGUILayout.EndVertical();
+    }
+
+    void DrawBpmChangesPanel()
+    {
+        EditorGUILayout.HelpBox(
+            $"Base BPM: {currentChart.bpm}. Add tempo changes below. " +
+            "Each entry overrides the BPM from that timestamp onward.",
+            MessageType.Info);
+
+        // Add new BPM change
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Time (s):", GUILayout.Width(60));
+        newBpmChangeTime = EditorGUILayout.FloatField(newBpmChangeTime, GUILayout.Width(60));
+        EditorGUILayout.LabelField("BPM:", GUILayout.Width(35));
+        newBpmChangeValue = EditorGUILayout.FloatField(newBpmChangeValue, GUILayout.Width(60));
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        if (GUILayout.Button("Add"))
+        {
+            if (newBpmChangeValue > 0f && newBpmChangeTime > 0f)
+            {
+                Undo.RecordObject(currentChart, "Add BPM Change");
+                currentChart.bpmChanges.Add(new BpmChangeData
+                {
+                    timestamp = newBpmChangeTime,
+                    bpm = newBpmChangeValue
+                });
+                currentChart.SortBpmChanges();
+                EditorUtility.SetDirty(currentChart);
+            }
+        }
+
+        if (GUILayout.Button("Add at Playhead"))
+        {
+            if (newBpmChangeValue > 0f)
+            {
+                Undo.RecordObject(currentChart, "Add BPM Change at Playhead");
+                currentChart.bpmChanges.Add(new BpmChangeData
+                {
+                    timestamp = (float)songTime,
+                    bpm = newBpmChangeValue
+                });
+                currentChart.SortBpmChanges();
+                EditorUtility.SetDirty(currentChart);
+            }
+        }
+        EditorGUILayout.EndHorizontal();
+
+        // List existing BPM changes
+        if (currentChart.bpmChanges.Count > 0)
+        {
+            bpmScrollPosition = EditorGUILayout.BeginScrollView(bpmScrollPosition, GUILayout.MaxHeight(120));
+            for (int i = 0; i < currentChart.bpmChanges.Count; i++)
+            {
+                BpmChangeData change = currentChart.bpmChanges[i];
+                EditorGUILayout.BeginHorizontal();
+
+                // Editable fields
+                EditorGUI.BeginChangeCheck();
+                float editedTime = EditorGUILayout.FloatField(change.timestamp, GUILayout.Width(60));
+                float editedBpm = EditorGUILayout.FloatField(change.bpm, GUILayout.Width(60));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    Undo.RecordObject(currentChart, "Edit BPM Change");
+                    change.timestamp = editedTime;
+                    change.bpm = editedBpm;
+                    currentChart.SortBpmChanges();
+                    EditorUtility.SetDirty(currentChart);
+                }
+
+                // Seek to this BPM change
+                if (GUILayout.Button("Go", GUILayout.Width(30)))
+                {
+                    SeekTo(change.timestamp);
+                    selectedBpmChangeIndex = i;
+                }
+
+                // Remove this BPM change
+                if (GUILayout.Button("X", GUILayout.Width(25)))
+                {
+                    Undo.RecordObject(currentChart, "Remove BPM Change");
+                    currentChart.bpmChanges.RemoveAt(i);
+                    EditorUtility.SetDirty(currentChart);
+                    i--;
+                }
+
+                EditorGUILayout.EndHorizontal();
+            }
+            EditorGUILayout.EndScrollView();
+        }
+        else
+        {
+            EditorGUILayout.LabelField("No BPM changes. Song uses constant BPM.", EditorStyles.miniLabel);
+        }
     }
 
     void DrawTimeline()
     {
         if (currentChart == null) return;
 
-        // Adjust this value to give more space to toolbar
-        float toolbarBottom = 260;
-        Rect timelineRect = new Rect(0, toolbarBottom, position.width, position.height - toolbarBottom);
+        // The timeline fills the remaining width to the right of the tools panel
+        float timelineX = toolsPanelWidth + 2;
+        float timelineWidth = position.width - timelineX;
+        Rect timelineRect = new Rect(timelineX, 0, timelineWidth, position.height);
 
+        // Draw a subtle border between panels
+        EditorGUI.DrawRect(new Rect(timelineX - 2, 0, 2, position.height), new Color(0.1f, 0.1f, 0.1f));
+
+        float contentWidth = laneWidth * 6 + 50;
         scrollPosition = GUI.BeginScrollView(timelineRect, scrollPosition,
-            new Rect(0, 0, laneWidth * 6, GetTimelineLength()));
+            new Rect(0, 0, contentWidth, GetTimelineLength()));
 
         DrawLanes();
         DrawGridLines();
+        DrawBpmChangeMarkers();
         DrawNotes();
         DrawPlayhead();
         DrawSelectionRect();
 
-        // HandleInput is inside the scroll view, so mousePosition is in content-space
         HandleInput(timelineRect);
 
         GUI.EndScrollView();
@@ -393,9 +535,7 @@ public class ChartEditor : EditorWindow
     float GetTimelineLength()
     {
         if (audioClip == null) return 1000f;
-        float songLength = audioClip.length;
-        float beatsPerSecond = currentChart.bpm / 60f;
-        float totalBeats = songLength * beatsPerSecond;
+        float totalBeats = currentChart.TimeToBeat(audioClip.length);
         return totalBeats * beatHeight * zoom;
     }
 
@@ -421,92 +561,201 @@ public class ChartEditor : EditorWindow
     {
         if (currentChart.bpm <= 0) return;
 
-        float beatsPerSecond = currentChart.bpm / 60f;
-        float secondsPerBeat = 1f / beatsPerSecond;
         float totalTime = audioClip != null ? audioClip.length : 60f;
-        float subdivisionInterval = secondsPerBeat / beatDivision;
 
         // Determine visible Y range to only draw visible grid lines
         float visibleTop = scrollPosition.y;
         float visibleBottom = scrollPosition.y + position.height;
-        float startTime = Mathf.Max(0f, YToTime(visibleTop) - subdivisionInterval);
-        float endTime = Mathf.Min(totalTime, YToTime(visibleBottom) + subdivisionInterval);
 
-        // Snap startTime to nearest subdivision
-        int startDiv = Mathf.FloorToInt(startTime / subdivisionInterval);
-        startTime = startDiv * subdivisionInterval;
+        // We need to iterate through time segments between BPM changes
+        // Build a list of BPM segments: (startTime, endTime, bpm)
+        List<(float start, float end, float bpm)> segments = GetBpmSegments(totalTime);
 
-        for (float time = startTime; time <= endTime; time += subdivisionInterval)
+        foreach (var seg in segments)
         {
-            float y = TimeToY(time);
-            float beatNumber = time * beatsPerSecond;
+            float beatsPerSecond = seg.bpm / 60f;
+            float secondsPerBeat = 1f / beatsPerSecond;
+            float subdivisionInterval = secondsPerBeat / beatDivision;
 
-            // Determine line importance
-            bool isMeasureLine = Mathf.Approximately(beatNumber % 4f, 0f) || beatNumber % 4f < 0.001f;
-            bool isBeatLine = Mathf.Approximately(beatNumber % 1f, 0f) || beatNumber % 1f < 0.001f;
-            bool isTripletLine = (beatDivision % 3 == 0) && !isBeatLine;
+            // Snap segment start to nearest subdivision boundary within segment
+            float segStart = seg.start;
+            float segEnd = seg.end;
 
-            Color lineColor;
-            float lineHeight;
+            // Find the visible time range within this segment
+            float segVisibleStartTime = YToTime(visibleTop);
+            float segVisibleEndTime = YToTime(visibleBottom);
 
-            if (isMeasureLine)
-            {
-                lineColor = new Color(1, 1, 1, 0.5f);
-                lineHeight = 2;
-            }
-            else if (isBeatLine)
-            {
-                lineColor = new Color(1, 1, 1, 0.3f);
-                lineHeight = 1;
-            }
-            else if (isTripletLine)
-            {
-                lineColor = new Color(0.6f, 0.4f, 1f, 0.2f); // Purple tint for triplets
-                lineHeight = 1;
-            }
-            else
-            {
-                lineColor = new Color(1, 1, 1, 0.1f);
-                lineHeight = 1;
-            }
+            float drawStart = Mathf.Max(segStart, segVisibleStartTime - subdivisionInterval);
+            float drawEnd = Mathf.Min(segEnd, segVisibleEndTime + subdivisionInterval);
 
-            EditorGUI.DrawRect(new Rect(0, y, laneWidth * 6, lineHeight), lineColor);
+            if (drawStart >= drawEnd) continue;
 
-            // Draw beat/measure numbers on major lines
-            if (isMeasureLine || isBeatLine)
+            // Snap drawStart to subdivision grid relative to segment start
+            int startDiv = Mathf.FloorToInt((drawStart - segStart) / subdivisionInterval);
+            drawStart = segStart + startDiv * subdivisionInterval;
+
+            for (float time = drawStart; time <= drawEnd; time += subdivisionInterval)
             {
-                int measure = Mathf.FloorToInt(beatNumber / 4f) + 1;
-                float beatInMeasure = (beatNumber % 4f) + 1f;
-                string label = isMeasureLine ? $"M{measure}" : $"{beatInMeasure:F0}";
-                Rect labelRect = new Rect(laneWidth * 6 + 4, y - 8, 40, 16);
-                GUI.Label(labelRect, label, EditorStyles.miniLabel);
+                if (time < segStart) continue;
+
+                float y = TimeToY(time);
+                float beatsSinceSegStart = (time - segStart) * beatsPerSecond;
+                float totalBeat = currentChart.TimeToBeat(time);
+
+                // Determine line importance
+                bool isMeasureLine = Mathf.Approximately(totalBeat % 4f, 0f) || totalBeat % 4f < 0.01f;
+                bool isBeatLine = Mathf.Approximately(totalBeat % 1f, 0f) || totalBeat % 1f < 0.01f;
+                bool isTripletLine = (beatDivision % 3 == 0) && !isBeatLine;
+
+                Color lineColor;
+                float lineHeight;
+
+                if (isMeasureLine)
+                {
+                    lineColor = new Color(1, 1, 1, 0.5f);
+                    lineHeight = 2;
+                }
+                else if (isBeatLine)
+                {
+                    lineColor = new Color(1, 1, 1, 0.3f);
+                    lineHeight = 1;
+                }
+                else if (isTripletLine)
+                {
+                    lineColor = new Color(0.6f, 0.4f, 1f, 0.2f);
+                    lineHeight = 1;
+                }
+                else
+                {
+                    lineColor = new Color(1, 1, 1, 0.1f);
+                    lineHeight = 1;
+                }
+
+                EditorGUI.DrawRect(new Rect(0, y, laneWidth * 6, lineHeight), lineColor);
+
+                // Draw beat/measure numbers on major lines
+                if (isMeasureLine || isBeatLine)
+                {
+                    int measure = Mathf.FloorToInt(totalBeat / 4f) + 1;
+                    float beatInMeasure = (totalBeat % 4f) + 1f;
+                    string label = isMeasureLine ? $"M{measure}" : $"{beatInMeasure:F0}";
+                    Rect labelRect = new Rect(laneWidth * 6 + 4, y - 8, 40, 16);
+                    GUI.Label(labelRect, label, EditorStyles.miniLabel);
+                }
             }
         }
+    }
+
+    void DrawBpmChangeMarkers()
+    {
+        if (currentChart.bpmChanges == null) return;
+
+        for (int i = 0; i < currentChart.bpmChanges.Count; i++)
+        {
+            BpmChangeData change = currentChart.bpmChanges[i];
+            float y = TimeToY(change.timestamp);
+
+            // Draw a bright orange line across all lanes
+            EditorGUI.DrawRect(new Rect(0, y - 1, laneWidth * 6, 3), new Color(1f, 0.5f, 0f, 0.9f));
+
+            // Draw BPM label
+            bool isSelected = (selectedBpmChangeIndex == i);
+            GUIStyle markerStyle = new GUIStyle(EditorStyles.miniLabel);
+            markerStyle.normal.textColor = isSelected ? Color.yellow : new Color(1f, 0.6f, 0.1f);
+            Rect labelRect = new Rect(laneWidth * 6 + 4, y - 14, 80, 16);
+            GUI.Label(labelRect, $"BPM: {change.bpm}", markerStyle);
+        }
+    }
+
+    /// <summary>
+    /// Returns BPM segments covering the entire song duration.
+    /// Each segment is (startTime, endTime, bpm).
+    /// </summary>
+    List<(float start, float end, float bpm)> GetBpmSegments(float totalTime)
+    {
+        var segments = new List<(float start, float end, float bpm)>();
+        float prevTime = 0f;
+        float currentBpm = currentChart.bpm;
+
+        if (currentChart.bpmChanges != null)
+        {
+            for (int i = 0; i < currentChart.bpmChanges.Count; i++)
+            {
+                float changeTime = currentChart.bpmChanges[i].timestamp;
+                if (changeTime > totalTime) break;
+                if (changeTime > prevTime)
+                {
+                    segments.Add((prevTime, changeTime, currentBpm));
+                }
+                prevTime = changeTime;
+                currentBpm = currentChart.bpmChanges[i].bpm;
+            }
+        }
+
+        if (prevTime < totalTime)
+        {
+            segments.Add((prevTime, totalTime, currentBpm));
+        }
+
+        return segments;
     }
 
     void DrawNotes()
     {
         if (currentChart.notes == null) return;
 
+        // Scale note dimensions with zoom so dense patterns don't overlap
+        float noteHeight = Mathf.Clamp(16f * Mathf.Sqrt(zoom), 6f, 30f);
+        float noteMarginH = Mathf.Clamp(8f / zoom, 2f, 20f);
+
         foreach (NoteData note in currentChart.notes)
         {
             float y = TimeToY(note.timestamp);
-            Rect noteRect = new Rect(note.laneIndex * laneWidth + 10, y - 10, laneWidth - 20, 20);
+            float halfH = noteHeight / 2f;
+            Rect noteRect = new Rect(
+                note.laneIndex * laneWidth + noteMarginH,
+                y - halfH,
+                laneWidth - noteMarginH * 2f,
+                noteHeight);
 
             Color noteColor = GetNoteColor(note);
+
+            // Draw hold tail first (behind the note head)
+            if (note.noteType == NoteType.Hold && note.holdDuration > 0f)
+            {
+                float endY = TimeToY(note.timestamp + note.holdDuration);
+                float tailHeight = endY - y;
+
+                float tailMargin = noteMarginH + (laneWidth - noteMarginH * 2f) * 0.15f;
+                Rect holdRect = new Rect(note.laneIndex * laneWidth + tailMargin, y, laneWidth - tailMargin * 2f, tailHeight);
+                Color holdColor = noteColor;
+                holdColor.a = 0.35f;
+                EditorGUI.DrawRect(holdRect, holdColor);
+
+                // Draw hold end cap
+                float capMargin = noteMarginH + 2f;
+                Rect endCapRect = new Rect(note.laneIndex * laneWidth + capMargin, endY - halfH * 0.5f, laneWidth - capMargin * 2f, noteHeight * 0.5f);
+                Color endCapColor = noteColor;
+                endCapColor.a = 0.6f;
+                EditorGUI.DrawRect(endCapRect, endCapColor);
+            }
 
             // Highlight selected notes
             if (selectedNotes.Contains(note))
             {
-                // Draw selection outline
                 EditorGUI.DrawRect(new Rect(noteRect.x - 2, noteRect.y - 2, noteRect.width + 4, noteRect.height + 4), Color.white);
             }
 
             EditorGUI.DrawRect(noteRect, noteColor);
 
-            // Draw note info
-            string noteLabel = note.laneIndex <= 2 ? note.stickDirection.ToString() : note.buttonRow.ToString();
-            GUI.Label(noteRect, noteLabel, EditorStyles.centeredGreyMiniLabel);
+            // Draw note info (only when zoomed in enough to read)
+            if (zoom >= 0.4f)
+            {
+                string noteLabel = note.laneIndex <= 2 ? note.stickDirection.ToString() : note.buttonRow.ToString();
+                if (note.noteType == NoteType.Hold)
+                    noteLabel += " H";
+                GUI.Label(noteRect, noteLabel, EditorStyles.centeredGreyMiniLabel);
+            }
         }
     }
 
@@ -521,13 +770,11 @@ public class ChartEditor : EditorWindow
         if (!isDragging) return;
 
         Rect selRect = GetSelectionRect();
-        // Semi-transparent fill
         EditorGUI.DrawRect(selRect, new Color(0.3f, 0.6f, 1f, 0.15f));
-        // Border lines
-        EditorGUI.DrawRect(new Rect(selRect.x, selRect.y, selRect.width, 1), new Color(0.3f, 0.6f, 1f, 0.8f)); // top
-        EditorGUI.DrawRect(new Rect(selRect.x, selRect.yMax - 1, selRect.width, 1), new Color(0.3f, 0.6f, 1f, 0.8f)); // bottom
-        EditorGUI.DrawRect(new Rect(selRect.x, selRect.y, 1, selRect.height), new Color(0.3f, 0.6f, 1f, 0.8f)); // left
-        EditorGUI.DrawRect(new Rect(selRect.xMax - 1, selRect.y, 1, selRect.height), new Color(0.3f, 0.6f, 1f, 0.8f)); // right
+        EditorGUI.DrawRect(new Rect(selRect.x, selRect.y, selRect.width, 1), new Color(0.3f, 0.6f, 1f, 0.8f));
+        EditorGUI.DrawRect(new Rect(selRect.x, selRect.yMax - 1, selRect.width, 1), new Color(0.3f, 0.6f, 1f, 0.8f));
+        EditorGUI.DrawRect(new Rect(selRect.x, selRect.y, 1, selRect.height), new Color(0.3f, 0.6f, 1f, 0.8f));
+        EditorGUI.DrawRect(new Rect(selRect.xMax - 1, selRect.y, 1, selRect.height), new Color(0.3f, 0.6f, 1f, 0.8f));
     }
 
     Rect GetSelectionRect()
@@ -550,18 +797,16 @@ public class ChartEditor : EditorWindow
 
     float TimeToY(float time)
     {
-        if (currentChart.bpm <= 0) return 0;
-        float beatsPerSecond = currentChart.bpm / 60f;
-        float beats = time * beatsPerSecond;
+        if (currentChart == null || currentChart.bpm <= 0) return 0;
+        float beats = currentChart.TimeToBeat(time);
         return beats * beatHeight * zoom;
     }
 
     float YToTime(float y)
     {
-        if (currentChart.bpm <= 0) return 0;
-        float beatsPerSecond = currentChart.bpm / 60f;
+        if (currentChart == null || currentChart.bpm <= 0) return 0;
         float beats = y / (beatHeight * zoom);
-        return beats / beatsPerSecond;
+        return currentChart.BeatToTime(beats);
     }
 
     void SeekTo(float time)
@@ -581,7 +826,9 @@ public class ChartEditor : EditorWindow
     void SeekByBeats(int beats)
     {
         if (currentChart == null || currentChart.bpm <= 0) return;
-        float secondsPerBeat = 60f / currentChart.bpm;
+        // Use the BPM at the current time for seeking
+        float activeBpm = currentChart.GetBpmAtTime((float)songTime);
+        float secondsPerBeat = 60f / activeBpm;
         SeekTo((float)songTime + beats * secondsPerBeat);
     }
 
@@ -593,7 +840,17 @@ public class ChartEditor : EditorWindow
         if (!visibleContentRect.Contains(e.mousePosition))
             return;
 
-        // Middle-click to seek playhead to clicked position
+        // Scroll wheel zoom (Ctrl+Scroll)
+        if (e.type == EventType.ScrollWheel && e.control)
+        {
+            float zoomDelta = -e.delta.y * 0.05f * zoom;
+            zoom = Mathf.Clamp(zoom + zoomDelta, 0.1f, 10f);
+            e.Use();
+            Repaint();
+            return;
+        }
+
+        // Middle-click to seek playhead
         if (e.type == EventType.MouseDown && e.button == 2)
         {
             float clickedTime = YToTime(e.mousePosition.y);
@@ -631,10 +888,9 @@ public class ChartEditor : EditorWindow
             return;
         }
 
-        // Normal click (no shift) — place or delete notes
+        // Normal click — place or delete notes
         if (!e.shift && e.type == EventType.MouseDown && e.button == 0)
         {
-            // Click on empty area clears selection
             if (selectedNotes.Count > 0 && !e.control)
             {
                 selectedNotes.Clear();
@@ -643,19 +899,22 @@ public class ChartEditor : EditorWindow
             int clickedLane = Mathf.FloorToInt(e.mousePosition.x / laneWidth);
             float clickedTime = YToTime(e.mousePosition.y);
 
+            // Scale click tolerance with zoom — tighter tolerance when zoomed in
+            float clickTolerance = Mathf.Clamp(0.2f / zoom, 0.02f, 0.5f);
+
             Debug.Log($"Content Mouse: {e.mousePosition}, Lane: {clickedLane}, Time: {clickedTime:F2}s");
 
             if (clickedLane >= 0 && clickedLane < 6)
             {
-                NoteData clickedNote = FindNoteAt(clickedLane, clickedTime, 0.2f);
+                NoteData clickedNote = FindNoteAt(clickedLane, clickedTime, clickTolerance);
 
-                if (clickedNote != null && e.control) // Ctrl+Click to delete
+                if (clickedNote != null && e.control)
                 {
                     DeleteNote(clickedNote);
                     e.Use();
                     Repaint();
                 }
-                else if (clickedNote == null) // Empty space - place new note
+                else if (clickedNote == null)
                 {
                     PlaceNote(clickedLane, clickedTime);
                     e.Use();
@@ -669,8 +928,9 @@ public class ChartEditor : EditorWindow
         {
             int clickedLane = Mathf.FloorToInt(e.mousePosition.x / laneWidth);
             float clickedTime = YToTime(e.mousePosition.y);
+            float clickTolerance = Mathf.Clamp(0.2f / zoom, 0.02f, 0.5f);
 
-            NoteData clickedNote = FindNoteAt(clickedLane, clickedTime, 0.2f);
+            NoteData clickedNote = FindNoteAt(clickedLane, clickedTime, clickTolerance);
             if (clickedNote != null)
             {
                 DeleteNote(clickedNote);
@@ -685,19 +945,25 @@ public class ChartEditor : EditorWindow
         Event e = Event.current;
         if (e.type != EventType.KeyDown) return;
 
-        // Ctrl+C — Copy selected notes
+        // Ctrl+C — Copy
         if (e.control && e.keyCode == KeyCode.C && selectedNotes.Count > 0)
         {
             CopySelection();
             e.Use();
         }
-        // Ctrl+V — Paste at playhead
+        // Ctrl+V — Paste
         else if (e.control && e.keyCode == KeyCode.V && clipboard.Count > 0)
         {
             PasteAtPlayhead();
             e.Use();
         }
-        // Delete / Backspace — Delete selected notes
+        // Ctrl+A — Select all visible notes
+        else if (e.control && e.keyCode == KeyCode.A)
+        {
+            SelectAllNotes();
+            e.Use();
+        }
+        // Delete / Backspace
         else if ((e.keyCode == KeyCode.Delete || e.keyCode == KeyCode.Backspace) && selectedNotes.Count > 0)
         {
             DeleteSelectedNotes();
@@ -710,7 +976,7 @@ public class ChartEditor : EditorWindow
             Repaint();
             e.Use();
         }
-        // Left/Right arrow — seek by one beat
+        // Arrow keys — seek
         else if (e.keyCode == KeyCode.LeftArrow)
         {
             SeekByBeats(-1);
@@ -719,6 +985,7 @@ public class ChartEditor : EditorWindow
         else if (e.keyCode == KeyCode.RightArrow)
         {
             SeekByBeats(1);
+            e.Use();
         }
         // Space — toggle playback
         else if (e.keyCode == KeyCode.Space)
@@ -726,6 +993,28 @@ public class ChartEditor : EditorWindow
             TogglePlayback();
             e.Use();
         }
+        // + / - to adjust zoom quickly
+        else if (e.keyCode == KeyCode.Equals || e.keyCode == KeyCode.KeypadPlus)
+        {
+            zoom = Mathf.Clamp(zoom * 1.25f, 0.1f, 10f);
+            Repaint();
+            e.Use();
+        }
+        else if (e.keyCode == KeyCode.Minus || e.keyCode == KeyCode.KeypadMinus)
+        {
+            zoom = Mathf.Clamp(zoom * 0.8f, 0.1f, 10f);
+            Repaint();
+            e.Use();
+        }
+    }
+
+    void SelectAllNotes()
+    {
+        if (currentChart == null || currentChart.notes == null) return;
+        selectedNotes.Clear();
+        selectedNotes.AddRange(currentChart.notes);
+        Debug.Log($"Selected all {selectedNotes.Count} notes");
+        Repaint();
     }
 
     void SelectNotesInRect()
@@ -759,14 +1048,12 @@ public class ChartEditor : EditorWindow
     {
         clipboard.Clear();
 
-        // Find the earliest timestamp to use as the reference point
         float earliestTime = selectedNotes.Min(n => n.timestamp);
 
         foreach (NoteData note in selectedNotes)
         {
             clipboard.Add(new NoteData
             {
-                // Store time as relative offset, but keep absolute lane indices
                 timestamp = note.timestamp - earliestTime,
                 laneIndex = note.laneIndex,
                 noteType = note.noteType,
@@ -785,22 +1072,22 @@ public class ChartEditor : EditorWindow
 
         float pasteTime = (float)songTime;
 
-        // Snap paste position to grid
-        float beatsPerSecond = currentChart.bpm / 60f;
+        // Snap paste position to grid using active BPM
+        float activeBpm = currentChart.GetBpmAtTime(pasteTime);
+        float beatsPerSecond = activeBpm / 60f;
         float snapInterval = 1f / beatsPerSecond / beatDivision;
         pasteTime = Mathf.Round(pasteTime / snapInterval) * snapInterval;
 
+        Undo.RecordObject(currentChart, "Paste Notes");
         selectedNotes.Clear();
 
         foreach (NoteData clipNote in clipboard)
         {
-            int absoluteLane = clipNote.laneIndex; // Relative lane offset from copy
-            float absoluteTime = pasteTime + clipNote.timestamp; // Relative time offset from clip
+            int absoluteLane = clipNote.laneIndex;
+            float absoluteTime = pasteTime + clipNote.timestamp;
 
-            // Clamp lane to valid range
             if (absoluteLane < 0 || absoluteLane > 5) continue;
 
-            // Skip if a note already exists at this position
             if (FindNoteAt(absoluteLane, absoluteTime, 0.01f) != null) continue;
 
             NoteData newNote = new NoteData
@@ -825,6 +1112,8 @@ public class ChartEditor : EditorWindow
 
     void DeleteSelectedNotes()
     {
+        Undo.RecordObject(currentChart, "Delete Selected Notes");
+
         foreach (NoteData note in selectedNotes)
         {
             currentChart.notes.Remove(note);
@@ -838,6 +1127,7 @@ public class ChartEditor : EditorWindow
 
     void DeleteNote(NoteData note)
     {
+        Undo.RecordObject(currentChart, "Delete Note");
         currentChart.notes.Remove(note);
         selectedNotes.Remove(note);
         EditorUtility.SetDirty(currentChart);
@@ -846,10 +1136,13 @@ public class ChartEditor : EditorWindow
 
     void PlaceNote(int lane, float time)
     {
-        // Snap to grid
-        float beatsPerSecond = currentChart.bpm / 60f;
+        // Snap to grid using the BPM active at the clicked time
+        float activeBpm = currentChart.GetBpmAtTime(time);
+        float beatsPerSecond = activeBpm / 60f;
         float snapInterval = 1f / beatsPerSecond / beatDivision;
         time = Mathf.Round(time / snapInterval) * snapInterval;
+
+        Undo.RecordObject(currentChart, "Place Note");
 
         NoteData newNote = new NoteData
         {
@@ -858,7 +1151,7 @@ public class ChartEditor : EditorWindow
             noteType = selectedNoteType,
             stickDirection = selectedStickDirection,
             buttonRow = selectedButtonRow,
-            holdDuration = 0f
+            holdDuration = selectedNoteType == NoteType.Hold ? selectedHoldDuration : 0f
         };
 
         currentChart.notes.Add(newNote);
@@ -894,7 +1187,6 @@ public class ChartEditor : EditorWindow
             previewAudioSource.Play();
             isPlaying = true;
 
-            // Reset click tracking to match current playhead position
             ResetClickTracking();
         }
     }
@@ -916,8 +1208,6 @@ public class ChartEditor : EditorWindow
 
         if (currentChart == null || currentChart.notes == null) return;
 
-        // Find the last note index that's already before the current playhead
-        // so we don't re-trigger clicks for notes already passed
         for (int i = 0; i < currentChart.notes.Count; i++)
         {
             if (currentChart.notes[i].timestamp <= (float)songTime)

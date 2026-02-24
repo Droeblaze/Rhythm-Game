@@ -153,18 +153,54 @@ public class NoteSpawner : MonoBehaviour
                 continue;
             }
 
+            NoteVisual noteVisual = activeNotes[i].GetComponent<NoteVisual>();
+
+            // If this hold note is actively being held, pin it at the judgement line.
+            // The tail shrinks from the top in NoteVisual.Update() as holdTimeRemaining decreases.
+            if (noteVisual != null && noteVisual.isHoldActive)
+            {
+                Vector3 pinnedPos = activeNotes[i].transform.position;
+                pinnedPos.y = judgementLine.position.y;
+                activeNotes[i].transform.position = pinnedPos;
+                continue;
+            }
+
+            // If the hold has finished (complete, failed, or missed), the note resumes scrolling
+            // downward so the remaining tail visually drains past the judgement line.
+            if (noteVisual != null && noteVisual.holdFinished)
+            {
+                activeNotes[i].transform.position += Vector3.down * scrollSpeed * Time.deltaTime;
+
+                // Use the authoritative tailTopWorldY from NoteVisual, which tracks
+                // the frozen world-space top even after the tail GameObject is deactivated.
+                float topY = noteVisual.tailTopWorldY;
+
+                // Destroy once the tail top has scrolled well below the judgement line
+                if (topY < judgementLine.position.y - 3f)
+                {
+                    Destroy(activeNotes[i]);
+                    activeNotes.RemoveAt(i);
+                }
+                continue;
+            }
+
+            // Normal scrolling for all other notes
             activeNotes[i].transform.position += Vector3.down * scrollSpeed * Time.deltaTime;
 
             // Only mark as miss once the note has passed beyond the miss window
             float distancePastLine = judgementLine.position.y - activeNotes[i].transform.position.y;
             if (distancePastLine > maxMissDistance)
             {
-                NoteVisual noteVisual = activeNotes[i].GetComponent<NoteVisual>();
                 if (noteVisual != null)
                 {
                     noteVisual.MarkAsMiss();
                 }
-                activeNotes.RemoveAt(i);
+                // Don't RemoveAt here for hold notes — MarkAsMiss sets holdFinished
+                // and the holdFinished branch above will handle cleanup after scrolling off.
+                if (noteVisual == null || !noteVisual.holdFinished)
+                {
+                    activeNotes.RemoveAt(i);
+                }
             }
         }
     }

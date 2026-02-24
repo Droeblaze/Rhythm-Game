@@ -72,7 +72,10 @@ MonoBehaviour:
   upRightArrow: {fileID: -121731923550382394, guid: 625cf8956a861df4886e4b57794880f1, type: 3}
   rightArrow: {fileID: -4345969612696422427, guid: 27f46ad0c8a2a8b439f7fc572e9fd30a, type: 3}
   downRightArrow: {fileID: 5127954350836573552, guid: a40fdf046e5867448b5260ca1b6c5ef7, type: 3}
-  holdTailSprite: {fileID: -1178513533788106267, guid: 5119df2c7905af0488eade414278146e, type: 3}
+  holdTailSprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  isHoldActive: 0
+  holdTimeRemaining: 0
+  holdCompleted: 0
 --- !u!212 &1100860236832128074
 SpriteRenderer:
   serializedVersion: 2
@@ -213,7 +216,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -221,7 +224,7 @@ SpriteRenderer:
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
 --- !u!1 &7844879147190952890
 GameObject:
@@ -304,7 +307,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 0}
+  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -312,5 +315,5 @@ SpriteRenderer:
   m_Size: {x: 1, y: 1}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
-  m_WasSpriteAssigned: 0
+  m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0

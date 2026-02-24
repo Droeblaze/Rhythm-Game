@@ -1380,6 +1380,9 @@ MonoBehaviour:
   stickGreatWindow: 0.15
   stickGoodWindow: 0.2
   stickMissWindow: 0.3
+  holdPerfectThreshold: 0.95
+  holdGreatThreshold: 0.8
+  holdGoodThreshold: 0.6
   stickDeadzone: 0.5
   lane3TopIsButton: 1
   lane3TopButton: 3

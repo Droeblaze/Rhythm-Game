@@ -20,6 +20,12 @@ public class InputManager : MonoBehaviour
     public float stickGoodWindow = 0.2f;       // ±200ms for good
     public float stickMissWindow = 0.3f;       // ±300ms, beyond this is a miss
 
+    [Header("Hold Note Settings")]
+    [Tooltip("Percentage of the hold that must be sustained for each judgement tier (0-1)")]
+    public float holdPerfectThreshold = 0.95f;
+    public float holdGreatThreshold = 0.80f;
+    public float holdGoodThreshold = 0.60f;
+
     [Header("Stick Settings")]
     public float stickDeadzone = 0.5f; // Threshold for stick input
 
@@ -53,6 +59,9 @@ public class InputManager : MonoBehaviour
     private Dictionary<int, List<NoteVisual>> notesInLane = new Dictionary<int, List<NoteVisual>>();
     private Dictionary<string, bool> previousTriggerStates = new Dictionary<string, bool>();
 
+    // Active hold notes being sustained, keyed by lane index
+    private Dictionary<int, NoteVisual> activeHoldNotes = new Dictionary<int, NoteVisual>();
+
     // Previous stick direction for detecting direction changes
     private int previousHorizDir = 0;
     private int previousVertDir = 0;
@@ -70,6 +79,7 @@ public class InputManager : MonoBehaviour
     {
         CheckStickInputs();
         CheckButtonInputs();
+        UpdateHoldNotes();
     }
 
     void CheckStickInputs()
@@ -209,6 +219,8 @@ public class InputManager : MonoBehaviour
         foreach (NoteVisual note in notesInLane[lane])
         {
             if (note == null || note.data.stickDirection != direction) continue;
+            // Skip notes that are already being held
+            if (note.isHoldActive) continue;
 
             float distance = Mathf.Abs(note.transform.position.y - judgementLine.position.y);
 
@@ -235,6 +247,8 @@ public class InputManager : MonoBehaviour
         foreach (NoteVisual note in notesInLane[lane])
         {
             if (note == null || note.data.buttonRow != row) continue;
+            // Skip notes that are already being held
+            if (note.isHoldActive) continue;
 
             float distance = Mathf.Abs(note.transform.position.y - judgementLine.position.y);
 
@@ -270,6 +284,21 @@ public class InputManager : MonoBehaviour
         else if (timing <= mWindow)
             judgement = "OK";
 
+        // For hold notes, start the hold phase instead of removing immediately
+        if (note.data.noteType == NoteType.Hold && judgement != "Miss")
+        {
+            Debug.Log($"Lane {note.data.laneIndex} Hold Started! Initial: {judgement} (timing: {timing:F3}s)");
+
+            if (judgementDisplay != null)
+                judgementDisplay.ShowJudgement(judgement);
+
+            note.MarkAsHit(); // Sets isHoldActive = true
+            activeHoldNotes[note.data.laneIndex] = note;
+
+            // Remove from normal hit detection but keep in notesInLane for miss tracking
+            return;
+        }
+
         Debug.Log($"Lane {note.data.laneIndex} Hit! Judgement: {judgement} (timing: {timing:F3}s)");
 
         // Display judgement on screen
@@ -282,7 +311,181 @@ public class InputManager : MonoBehaviour
         note.MarkAsHit();
     }
 
-    // NEW METHOD: Called when a note is missed (passes judgement line)
+    /// <summary>
+    /// Each frame, tick down active hold notes and check if the input is still held.
+    /// </summary>
+    void UpdateHoldNotes()
+    {
+        // Iterate over a copy of keys to allow removal during iteration
+        List<int> lanes = new List<int>(activeHoldNotes.Keys);
+
+        foreach (int lane in lanes)
+        {
+            NoteVisual note = activeHoldNotes[lane];
+
+            if (note == null)
+            {
+                activeHoldNotes.Remove(lane);
+                continue;
+            }
+
+            // Check if the corresponding input is still being held
+            bool stillHeld = IsInputStillHeld(note);
+
+            if (stillHeld)
+            {
+                // Tick down the remaining hold time
+                note.holdTimeRemaining -= Time.deltaTime;
+
+                if (note.holdTimeRemaining <= 0f)
+                {
+                    // Hold completed successfully!
+                    CompleteHold(note, lane);
+                }
+            }
+            else
+            {
+                // Player released early — evaluate how much was held
+                FailHold(note, lane);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Returns true if the player is still holding the correct input for this note.
+    /// </summary>
+    bool IsInputStillHeld(NoteVisual note)
+    {
+        int lane = note.data.laneIndex;
+
+        if (lane <= 2)
+        {
+            // Stick lanes: check if the stick is still pointing in the required direction
+            return IsStickHeld(lane, note.data.stickDirection);
+        }
+        else
+        {
+            // Button lanes: check if the required button(s) are still held
+            return IsButtonHeld(lane, note.data.buttonRow);
+        }
+    }
+
+    bool IsStickHeld(int lane, StickDirection direction)
+    {
+        float horizontal = Input.GetAxisRaw("Horizontal");
+        float vertical = Input.GetAxisRaw("Vertical");
+
+        int horizDir = horizontal < -stickDeadzone ? -1 : (horizontal > stickDeadzone ? 1 : 0);
+        int vertDir = vertical < -stickDeadzone ? -1 : (vertical > stickDeadzone ? 1 : 0);
+
+        // Check that the stick is in the correct lane quadrant
+        int requiredHoriz = lane == 0 ? -1 : (lane == 2 ? 1 : 0);
+
+        if (horizDir != requiredHoriz) return false;
+
+        // Check vertical direction matches
+        switch (direction)
+        {
+            case StickDirection.Up:
+                return vertDir == 1;
+            case StickDirection.Down:
+                return vertDir == -1;
+            case StickDirection.Horizontal:
+                return vertDir == 0;
+            case StickDirection.UpDown:
+                return vertDir == 1 || vertDir == -1;
+            default:
+                return false;
+        }
+    }
+
+    bool IsButtonHeld(int lane, ButtonRow row)
+    {
+        bool topIsBtn, bottomIsBtn;
+        int topBtn, bottomBtn;
+        string topAxis, bottomAxis;
+
+        GetLaneButtonConfig(lane, out topIsBtn, out topBtn, out topAxis,
+                                  out bottomIsBtn, out bottomBtn, out bottomAxis);
+
+        bool topHeld = GetInputHeld(topIsBtn, topBtn, topAxis);
+        bool bottomHeld = GetInputHeld(bottomIsBtn, bottomBtn, bottomAxis);
+
+        switch (row)
+        {
+            case ButtonRow.Top:
+                return topHeld;
+            case ButtonRow.Bottom:
+                return bottomHeld;
+            case ButtonRow.Both:
+                return topHeld && bottomHeld;
+            default:
+                return false;
+        }
+    }
+
+    void GetLaneButtonConfig(int lane, out bool topIsBtn, out int topBtn, out string topAxis,
+                                       out bool bottomIsBtn, out int bottomBtn, out string bottomAxis)
+    {
+        switch (lane)
+        {
+            case 3:
+                topIsBtn = lane3TopIsButton; topBtn = lane3TopButton; topAxis = lane3TopAxis;
+                bottomIsBtn = lane3BottomIsButton; bottomBtn = lane3BottomButton; bottomAxis = lane3BottomAxis;
+                break;
+            case 4:
+                topIsBtn = lane4TopIsButton; topBtn = lane4TopButton; topAxis = lane4TopAxis;
+                bottomIsBtn = lane4BottomIsButton; bottomBtn = lane4BottomButton; bottomAxis = lane4BottomAxis;
+                break;
+            case 5:
+                topIsBtn = lane5TopIsButton; topBtn = lane5TopButton; topAxis = lane5TopAxis;
+                bottomIsBtn = lane5BottomIsButton; bottomBtn = lane5BottomButton; bottomAxis = lane5BottomAxis;
+                break;
+            default:
+                topIsBtn = true; topBtn = 0; topAxis = "";
+                bottomIsBtn = true; bottomBtn = 0; bottomAxis = "";
+                break;
+        }
+    }
+
+    void CompleteHold(NoteVisual note, int lane)
+    {
+        Debug.Log($"Lane {lane} Hold Complete! Perfect hold!");
+
+        if (judgementDisplay != null)
+            judgementDisplay.ShowJudgement("Perfect!");
+
+        notesInLane[lane].Remove(note);
+        activeHoldNotes.Remove(lane);
+        note.MarkHoldComplete();
+    }
+
+    void FailHold(NoteVisual note, int lane)
+    {
+        // Calculate what percentage of the hold was sustained
+        float heldRatio = 1f - (note.holdTimeRemaining / note.data.holdDuration);
+
+        string judgement;
+        if (heldRatio >= holdPerfectThreshold)
+            judgement = "Perfect!";
+        else if (heldRatio >= holdGreatThreshold)
+            judgement = "Great!";
+        else if (heldRatio >= holdGoodThreshold)
+            judgement = "Good";
+        else
+            judgement = "Miss";
+
+        Debug.Log($"Lane {lane} Hold Released! Held {heldRatio:P0} — {judgement}");
+
+        if (judgementDisplay != null)
+            judgementDisplay.ShowJudgement(judgement);
+
+        notesInLane[lane].Remove(note);
+        activeHoldNotes.Remove(lane);
+        note.MarkHoldFailed();
+    }
+
+    // Called when a note is missed (passes judgement line)
     public void OnNoteMissed(NoteVisual note)
     {
         Debug.Log($"Lane {note.data.laneIndex} Missed!");
@@ -291,6 +494,12 @@ public class InputManager : MonoBehaviour
         if (judgementDisplay != null)
         {
             judgementDisplay.ShowJudgement("Miss");
+        }
+
+        // Clean up if this was an active hold (shouldn't normally happen, but safety check)
+        if (activeHoldNotes.ContainsKey(note.data.laneIndex) && activeHoldNotes[note.data.laneIndex] == note)
+        {
+            activeHoldNotes.Remove(note.data.laneIndex);
         }
 
         // Remove from tracking

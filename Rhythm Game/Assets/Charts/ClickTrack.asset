@@ -64,80 +64,45 @@ MonoBehaviour:
     buttonRow: 0
     holdDuration: 0
   - timestamp: 4
-    noteType: 0
+    noteType: 1
     laneIndex: 5
     stickDirection: 1
-    buttonRow: 1
-    holdDuration: 0
-  - timestamp: 4.5
-    noteType: 0
-    laneIndex: 5
+    buttonRow: 0
+    holdDuration: 1
+  - timestamp: 4
+    noteType: 1
+    laneIndex: 0
     stickDirection: 1
-    buttonRow: 1
-    holdDuration: 0
-  - timestamp: 5
+    buttonRow: 0
+    holdDuration: 1
+  - timestamp: 4
     noteType: 0
-    laneIndex: 5
+    laneIndex: 3
     stickDirection: 1
-    buttonRow: 1
-    holdDuration: 0
-  - timestamp: 5.5
-    noteType: 0
-    laneIndex: 5
-    stickDirection: 1
-    buttonRow: 1
+    buttonRow: 0
     holdDuration: 0
   - timestamp: 6
-    noteType: 0
-    laneIndex: 5
+    noteType: 1
+    laneIndex: 2
     stickDirection: 1
-    buttonRow: 1
-    holdDuration: 0
-  - timestamp: 6.5
-    noteType: 0
-    laneIndex: 5
+    buttonRow: 0
+    holdDuration: 1
+  - timestamp: 6
+    noteType: 1
+    laneIndex: 3
     stickDirection: 1
-    buttonRow: 1
-    holdDuration: 0
-  - timestamp: 7
-    noteType: 0
-    laneIndex: 5
-    stickDirection: 1
-    buttonRow: 1
-    holdDuration: 0
-  - timestamp: 7.5
-    noteType: 0
-    laneIndex: 5
-    stickDirection: 1
-    buttonRow: 1
-    holdDuration: 0
+    buttonRow: 0
+    holdDuration: 1
   - timestamp: 8
-    noteType: 0
-    laneIndex: 3
+    noteType: 1
+    laneIndex: 0
     stickDirection: 1
     buttonRow: 0
-    holdDuration: 0
-  - timestamp: 8.5
-    noteType: 0
-    laneIndex: 3
+    holdDuration: 1
+  - timestamp: 8
+    noteType: 1
+    laneIndex: 5
     stickDirection: 1
     buttonRow: 0
-    holdDuration: 0
-  - timestamp: 9
-    noteType: 0
-    laneIndex: 3
-    stickDirection: 1
-    buttonRow: 0
-    holdDuration: 0
-  - timestamp: 9.5
-    noteType: 0
-    laneIndex: 3
-    stickDirection: 1
-    buttonRow: 0
-    holdDuration: 0
-  - timestamp: 10
-    noteType: 0
-    laneIndex: 3
-    stickDirection: 1
-    buttonRow: 0
-    holdDuration: 0
+    holdDuration: 1
+  bpmChanges: []
