@@ -63,46 +63,58 @@ MonoBehaviour:
     stickDirection: 1
     buttonRow: 0
     holdDuration: 0
-  - timestamp: 4
-    noteType: 1
-    laneIndex: 5
-    stickDirection: 1
-    buttonRow: 0
-    holdDuration: 1
-  - timestamp: 4
-    noteType: 1
-    laneIndex: 0
-    stickDirection: 1
-    buttonRow: 0
-    holdDuration: 1
-  - timestamp: 4
+  - timestamp: 3.625
     noteType: 0
     laneIndex: 3
     stickDirection: 1
     buttonRow: 0
     holdDuration: 0
-  - timestamp: 6
-    noteType: 1
-    laneIndex: 2
+  - timestamp: 3.75
+    noteType: 0
+    laneIndex: 3
     stickDirection: 1
     buttonRow: 0
-    holdDuration: 1
-  - timestamp: 6
+    holdDuration: 0
+  - timestamp: 3.875
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 4
     noteType: 1
     laneIndex: 3
     stickDirection: 1
     buttonRow: 0
     holdDuration: 1
-  - timestamp: 8
+  - timestamp: 5
+    noteType: 1
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 1
+  - timestamp: 6
     noteType: 1
     laneIndex: 0
     stickDirection: 1
     buttonRow: 0
     holdDuration: 1
+  - timestamp: 7
+    noteType: 1
+    laneIndex: 0
+    stickDirection: 2
+    buttonRow: 0
+    holdDuration: 1
   - timestamp: 8
     noteType: 1
-    laneIndex: 5
-    stickDirection: 1
+    laneIndex: 1
+    stickDirection: 2
+    buttonRow: 0
+    holdDuration: 1
+  - timestamp: 9
+    noteType: 1
+    laneIndex: 2
+    stickDirection: 2
     buttonRow: 0
     holdDuration: 1
   bpmChanges: []

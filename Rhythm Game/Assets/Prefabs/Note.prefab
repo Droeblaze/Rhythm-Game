@@ -31,8 +31,8 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 8956858727538756897}
   - {fileID: 1337516719697439385}
+  - {fileID: 8956858727538756897}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &8568048560748636772
@@ -76,6 +76,8 @@ MonoBehaviour:
   isHoldActive: 0
   holdTimeRemaining: 0
   holdCompleted: 0
+  holdFinished: 0
+  tailTopWorldY: 0
 --- !u!212 &1100860236832128074
 SpriteRenderer:
   serializedVersion: 2

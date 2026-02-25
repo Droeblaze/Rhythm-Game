@@ -562,86 +562,72 @@ public class ChartEditor : EditorWindow
         if (currentChart.bpm <= 0) return;
 
         float totalTime = audioClip != null ? audioClip.length : 60f;
+        float totalBeats = currentChart.TimeToBeat(totalTime);
 
         // Determine visible Y range to only draw visible grid lines
         float visibleTop = scrollPosition.y;
         float visibleBottom = scrollPosition.y + position.height;
 
-        // We need to iterate through time segments between BPM changes
-        // Build a list of BPM segments: (startTime, endTime, bpm)
-        List<(float start, float end, float bpm)> segments = GetBpmSegments(totalTime);
+        // Convert visible range to beat range
+        float visibleBeatStart = visibleTop / (beatHeight * zoom);
+        float visibleBeatEnd = visibleBottom / (beatHeight * zoom);
 
-        foreach (var seg in segments)
+        // Calculate subdivision size in beats
+        float subdivisionSize = 1f / beatDivision;
+
+        // Snap to subdivision boundaries for the visible range
+        int startSubdiv = Mathf.FloorToInt(visibleBeatStart / subdivisionSize);
+        int endSubdiv = Mathf.CeilToInt(visibleBeatEnd / subdivisionSize);
+
+        // Clamp to valid range
+        startSubdiv = Mathf.Max(0, startSubdiv);
+        float maxSubdivisions = totalBeats / subdivisionSize;
+        endSubdiv = Mathf.Min(endSubdiv, Mathf.CeilToInt(maxSubdivisions));
+
+        for (int s = startSubdiv; s <= endSubdiv; s++)
         {
-            float beatsPerSecond = seg.bpm / 60f;
-            float secondsPerBeat = 1f / beatsPerSecond;
-            float subdivisionInterval = secondsPerBeat / beatDivision;
+            float beat = s * subdivisionSize;
+            float y = beat * beatHeight * zoom;
 
-            // Snap segment start to nearest subdivision boundary within segment
-            float segStart = seg.start;
-            float segEnd = seg.end;
+            // Determine line importance
+            bool isMeasureLine = Mathf.Approximately(beat % 4f, 0f) || beat % 4f < 0.01f;
+            bool isBeatLine = !isMeasureLine && (Mathf.Approximately(beat % 1f, 0f) || beat % 1f < 0.01f);
+            bool isTripletLine = (beatDivision % 3 == 0) && !isBeatLine && !isMeasureLine;
 
-            // Find the visible time range within this segment
-            float segVisibleStartTime = YToTime(visibleTop);
-            float segVisibleEndTime = YToTime(visibleBottom);
+            Color lineColor;
+            float lineHeight;
 
-            float drawStart = Mathf.Max(segStart, segVisibleStartTime - subdivisionInterval);
-            float drawEnd = Mathf.Min(segEnd, segVisibleEndTime + subdivisionInterval);
-
-            if (drawStart >= drawEnd) continue;
-
-            // Snap drawStart to subdivision grid relative to segment start
-            int startDiv = Mathf.FloorToInt((drawStart - segStart) / subdivisionInterval);
-            drawStart = segStart + startDiv * subdivisionInterval;
-
-            for (float time = drawStart; time <= drawEnd; time += subdivisionInterval)
+            if (isMeasureLine)
             {
-                if (time < segStart) continue;
+                lineColor = new Color(1, 1, 1, 0.5f);
+                lineHeight = 2;
+            }
+            else if (isBeatLine)
+            {
+                lineColor = new Color(1, 1, 1, 0.3f);
+                lineHeight = 1;
+            }
+            else if (isTripletLine)
+            {
+                lineColor = new Color(0.6f, 0.4f, 1f, 0.2f);
+                lineHeight = 1;
+            }
+            else
+            {
+                lineColor = new Color(1, 1, 1, 0.1f);
+                lineHeight = 1;
+            }
 
-                float y = TimeToY(time);
-                float beatsSinceSegStart = (time - segStart) * beatsPerSecond;
-                float totalBeat = currentChart.TimeToBeat(time);
+            EditorGUI.DrawRect(new Rect(0, y, laneWidth * 6, lineHeight), lineColor);
 
-                // Determine line importance
-                bool isMeasureLine = Mathf.Approximately(totalBeat % 4f, 0f) || totalBeat % 4f < 0.01f;
-                bool isBeatLine = Mathf.Approximately(totalBeat % 1f, 0f) || totalBeat % 1f < 0.01f;
-                bool isTripletLine = (beatDivision % 3 == 0) && !isBeatLine;
-
-                Color lineColor;
-                float lineHeight;
-
-                if (isMeasureLine)
-                {
-                    lineColor = new Color(1, 1, 1, 0.5f);
-                    lineHeight = 2;
-                }
-                else if (isBeatLine)
-                {
-                    lineColor = new Color(1, 1, 1, 0.3f);
-                    lineHeight = 1;
-                }
-                else if (isTripletLine)
-                {
-                    lineColor = new Color(0.6f, 0.4f, 1f, 0.2f);
-                    lineHeight = 1;
-                }
-                else
-                {
-                    lineColor = new Color(1, 1, 1, 0.1f);
-                    lineHeight = 1;
-                }
-
-                EditorGUI.DrawRect(new Rect(0, y, laneWidth * 6, lineHeight), lineColor);
-
-                // Draw beat/measure numbers on major lines
-                if (isMeasureLine || isBeatLine)
-                {
-                    int measure = Mathf.FloorToInt(totalBeat / 4f) + 1;
-                    float beatInMeasure = (totalBeat % 4f) + 1f;
-                    string label = isMeasureLine ? $"M{measure}" : $"{beatInMeasure:F0}";
-                    Rect labelRect = new Rect(laneWidth * 6 + 4, y - 8, 40, 16);
-                    GUI.Label(labelRect, label, EditorStyles.miniLabel);
-                }
+            // Draw beat/measure numbers on major lines
+            if (isMeasureLine || isBeatLine)
+            {
+                int measure = Mathf.FloorToInt(beat / 4f) + 1;
+                float beatInMeasure = (beat % 4f) + 1f;
+                string label = isMeasureLine ? $"M{measure}" : $"{beatInMeasure:F0}";
+                Rect labelRect = new Rect(laneWidth * 6 + 4, y - 8, 40, 16);
+                GUI.Label(labelRect, label, EditorStyles.miniLabel);
             }
         }
     }
@@ -807,6 +793,19 @@ public class ChartEditor : EditorWindow
         if (currentChart == null || currentChart.bpm <= 0) return 0;
         float beats = y / (beatHeight * zoom);
         return currentChart.BeatToTime(beats);
+    }
+
+    /// <summary>
+    /// Snaps a time value to the nearest grid subdivision in beat-space.
+    /// Works correctly across BPM changes because it converts to beats,
+    /// snaps, then converts back to time.
+    /// </summary>
+    float SnapTimeToGrid(float time)
+    {
+        float beat = currentChart.TimeToBeat(time);
+        float subdivisionSize = 1f / beatDivision;
+        float snappedBeat = Mathf.Round(beat / subdivisionSize) * subdivisionSize;
+        return currentChart.BeatToTime(snappedBeat);
     }
 
     void SeekTo(float time)
@@ -1070,13 +1069,7 @@ public class ChartEditor : EditorWindow
     {
         if (currentChart == null || clipboard.Count == 0) return;
 
-        float pasteTime = (float)songTime;
-
-        // Snap paste position to grid using active BPM
-        float activeBpm = currentChart.GetBpmAtTime(pasteTime);
-        float beatsPerSecond = activeBpm / 60f;
-        float snapInterval = 1f / beatsPerSecond / beatDivision;
-        pasteTime = Mathf.Round(pasteTime / snapInterval) * snapInterval;
+        float pasteTime = SnapTimeToGrid((float)songTime);
 
         Undo.RecordObject(currentChart, "Paste Notes");
         selectedNotes.Clear();
@@ -1136,11 +1129,8 @@ public class ChartEditor : EditorWindow
 
     void PlaceNote(int lane, float time)
     {
-        // Snap to grid using the BPM active at the clicked time
-        float activeBpm = currentChart.GetBpmAtTime(time);
-        float beatsPerSecond = activeBpm / 60f;
-        float snapInterval = 1f / beatsPerSecond / beatDivision;
-        time = Mathf.Round(time / snapInterval) * snapInterval;
+        // Snap to grid in beat-space so it works correctly across BPM changes
+        time = SnapTimeToGrid(time);
 
         Undo.RecordObject(currentChart, "Place Note");
 

@@ -70,6 +70,10 @@ public class NoteVisual : MonoBehaviour
 
     private void SetupVisuals()
     {
+        // Hide direction indicator by default — only stick lanes will enable it
+        if (directionIndicator != null)
+            directionIndicator.gameObject.SetActive(false);
+
         // Set base sprite based on lane
         if (data.laneIndex >= 0 && data.laneIndex <= 2)
         {
@@ -93,10 +97,6 @@ public class NoteVisual : MonoBehaviour
                 case ButtonRow.Bottom: spriteRenderer.sprite = bottomButtonSprite; break;
                 case ButtonRow.Both: spriteRenderer.sprite = middleButtonSprite; break;
             }
-
-            // Hide direction indicator for button lanes
-            if (directionIndicator != null)
-                directionIndicator.gameObject.SetActive(false);
         }
 
         // Setup hold tail if it's a hold note
@@ -109,6 +109,11 @@ public class NoteVisual : MonoBehaviour
         {
             if (holdTail != null)
                 holdTail.SetActive(false);
+
+            // Re-activate direction indicator in case it's a child of holdTail
+            // and was deactivated along with it
+            if (directionIndicator != null && data.laneIndex <= 2)
+                directionIndicator.gameObject.SetActive(true);
         }
     }
 
@@ -118,34 +123,47 @@ public class NoteVisual : MonoBehaviour
 
         directionIndicator.gameObject.SetActive(true);
 
+        Sprite assignedSprite = null;
+
         // Map stick direction to arrow sprite based on lane
         if (data.laneIndex == 0) // Left Stick
         {
             switch (data.stickDirection)
             {
-                case StickDirection.Up: directionIndicator.sprite = upLeftArrow; break;
-                case StickDirection.Horizontal: directionIndicator.sprite = leftArrow; break;
-                case StickDirection.Down: directionIndicator.sprite = downLeftArrow; break;
+                case StickDirection.Up: assignedSprite = upLeftArrow; break;
+                case StickDirection.Horizontal: assignedSprite = leftArrow; break;
+                case StickDirection.Down: assignedSprite = downLeftArrow; break;
             }
         }
         else if (data.laneIndex == 1) // Vertical Stick
         {
             switch (data.stickDirection)
             {
-                case StickDirection.Up: directionIndicator.sprite = upArrow; break;
-                case StickDirection.UpDown: directionIndicator.sprite = upArrow; break;
-                case StickDirection.Down: directionIndicator.sprite = downArrow; break;
+                case StickDirection.Up: assignedSprite = upArrow; break;
+                case StickDirection.UpDown: assignedSprite = upArrow; break;
+                case StickDirection.Down: assignedSprite = downArrow; break;
             }
         }
         else if (data.laneIndex == 2) // Right Stick
         {
             switch (data.stickDirection)
             {
-                case StickDirection.Up: directionIndicator.sprite = upRightArrow; break;
-                case StickDirection.Horizontal: directionIndicator.sprite = rightArrow; break;
-                case StickDirection.Down: directionIndicator.sprite = downRightArrow; break;
+                case StickDirection.Up: assignedSprite = upRightArrow; break;
+                case StickDirection.Horizontal: assignedSprite = rightArrow; break;
+                case StickDirection.Down: assignedSprite = downRightArrow; break;   
             }
         }
+
+        directionIndicator.sprite = assignedSprite;
+
+        Debug.Log($"[NoteVisual] Lane {data.laneIndex} Dir {data.stickDirection}: " +
+                  $"sprite={(assignedSprite != null ? assignedSprite.name : "NULL")}, " +
+                  $"baseSprite={(spriteRenderer.sprite != null ? spriteRenderer.sprite.name : "NULL")}, " +
+                  $"srEnabled={spriteRenderer.enabled}, " +
+                  $"srColor={spriteRenderer.color}, " +
+                  $"diEnabled={directionIndicator.enabled}, " +
+                  $"diActive={directionIndicator.gameObject.activeInHierarchy}, " +
+                  $"pos={transform.position}");
     }
 
     private void SetupHoldTail()
