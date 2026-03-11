@@ -16,6 +16,7 @@ public class NoteSpawner : MonoBehaviour
 
     [Header("Chart Data")]
     public ChartData chartData;
+    public bool loadFromSelection = true; // NEW: Toggle to load from selection
 
     private AudioSource audioSource;
     private float songTime = 0f;
@@ -27,6 +28,16 @@ public class NoteSpawner : MonoBehaviour
     void Start()
     {
         audioSource = GetComponent<AudioSource>();
+
+        // NEW: Load selected chart if enabled
+        if (loadFromSelection)
+        {
+            ChartData selectedChart = ChartSelectionManager.LoadSelectedChart();
+            if (selectedChart != null)
+            {
+                chartData = selectedChart;
+            }
+        }
 
         if (chartData == null || chartData.notes.Count == 0)
         {
@@ -195,7 +206,7 @@ public class NoteSpawner : MonoBehaviour
                 {
                     noteVisual.MarkAsMiss();
                 }
-                // Don't RemoveAt here for hold notes — MarkAsMiss sets holdFinished
+                // Don't RemoveAt here for hold notes – MarkAsMiss sets holdFinished
                 // and the holdFinished branch above will handle cleanup after scrolling off.
                 if (noteVisual == null || !noteVisual.holdFinished)
                 {

@@ -12,6 +12,10 @@ public class ChartData : ScriptableObject
     // Each entry defines a new BPM starting at a specific timestamp.
     public List<BpmChangeData> bpmChanges = new List<BpmChangeData>();
 
+    // Difficulty rating calculated by the DifficultyCalculator
+    [Tooltip("Automatically calculated difficulty rating (notes per second with modifiers)")]
+    public float difficulty;
+
     // Sort notes by timestamp for efficient processing
     public void SortNotes()
     {
@@ -21,6 +25,20 @@ public class ChartData : ScriptableObject
     public void SortBpmChanges()
     {
         bpmChanges.Sort((a, b) => a.timestamp.CompareTo(b.timestamp));
+    }
+
+    /// <summary>
+    /// Calculates and updates the difficulty rating for this chart.
+    /// Right-click the ChartData asset and select "Calculate Difficulty" to update.
+    /// </summary>
+    [ContextMenu("Calculate Difficulty")]
+    public void CalculateDifficulty()
+    {
+        DifficultyCalculator.UpdateChartDifficulty(this);
+        
+        #if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+        #endif
     }
 
     /// <summary>

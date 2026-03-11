@@ -5,9 +5,18 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 1
+  - enabled: 0
     path: Assets/Scenes/SampleScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
+  - enabled: 1
+    path: Assets/Scenes/MainMenu.unity
+    guid: 2536e9d6a14509746a46086fa689f32d
+  - enabled: 1
+    path: Assets/Scenes/InfiniteScrollVertical.unity
+    guid: cbb57e1eb4228734f94cc58a749103a9
+  - enabled: 1
+    path: Assets/Rhythm Game/Scenes/notetypes.unity
+    guid: 6492a6e34ce2efa41858b3a88cf9a91b
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
