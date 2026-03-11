@@ -2053,8 +2053,11 @@ MonoBehaviour:
   scrollSpeed: 12
   spawnDistance: 10
   audioStartDelay: 3
+  audioOffset: -0.2
   chartData: {fileID: 11400000, guid: 542ecb345b3ba994e8d9a51848e79744, type: 2}
   loadFromSelection: 1
+  resultsSceneName: Results
+  delayAfterSongEnd: 2
 --- !u!4 &1456298306
 Transform:
   m_ObjectHideFlags: 0

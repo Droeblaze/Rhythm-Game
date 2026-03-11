@@ -16,6 +16,10 @@ public class NoteSpawner : MonoBehaviour
     public float spawnDistance = 10f;
     public float audioStartDelay = 3f;
 
+    [Header("Audio Calibration")]
+    [Tooltip("Positive values delay audio (notes come earlier), negative values advance audio (notes come later). Measured in seconds.")]
+    public float audioOffset = 0f;
+
     [Header("Chart Data")]
     public ChartData chartData;
     public bool loadFromSelection = true; // NEW: Toggle to load from selection
@@ -92,8 +96,8 @@ public class NoteSpawner : MonoBehaviour
             // Song time is negative during countdown
             songTime = countdownTimer - audioStartDelay;
 
-            // Start audio when countdown finishes
-            if (countdownTimer >= audioStartDelay)
+            // Start audio when countdown finishes, accounting for audio offset
+            if (countdownTimer >= audioStartDelay + audioOffset)
             {
                 StartSong();
                 audioStarted = true;
@@ -101,8 +105,8 @@ public class NoteSpawner : MonoBehaviour
         }
         else
         {
-            // CRITICAL: Use audioSource.time for accurate rhythm sync
-            songTime = audioSource.time;
+            // CRITICAL: Use audioSource.time for accurate rhythm sync, adjusted by offset
+            songTime = audioSource.time + audioOffset;
 
             // Check if song has finished
             if (!songFinished && audioSource != null && !audioSource.isPlaying && audioStarted)
