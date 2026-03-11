@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
+using System.Collections;
 using System.Collections.Generic;
 
 public class NoteSpawner : MonoBehaviour
@@ -18,12 +20,17 @@ public class NoteSpawner : MonoBehaviour
     public ChartData chartData;
     public bool loadFromSelection = true; // NEW: Toggle to load from selection
 
+    [Header("Scene Transition")]
+    public string resultsSceneName = "Results";
+    public float delayAfterSongEnd = 2f; // Delay before transitioning to results
+
     private AudioSource audioSource;
     private float songTime = 0f;
     private int nextNoteIndex = 0;
     private List<GameObject> activeNotes = new List<GameObject>();
     private float countdownTimer = 0f;
     private bool audioStarted = false;
+    private bool songFinished = false;
 
     void Start()
     {
@@ -70,6 +77,7 @@ public class NoteSpawner : MonoBehaviour
 
         countdownTimer = 0f;
         audioStarted = false;
+        songFinished = false;
     }
 
     void Update()
@@ -95,6 +103,12 @@ public class NoteSpawner : MonoBehaviour
         {
             // CRITICAL: Use audioSource.time for accurate rhythm sync
             songTime = audioSource.time;
+
+            // Check if song has finished
+            if (!songFinished && audioSource != null && !audioSource.isPlaying && audioStarted)
+            {
+                OnSongFinished();
+            }
         }
 
         // Check if we need to spawn the next note
@@ -222,5 +236,21 @@ public class NoteSpawner : MonoBehaviour
         {
             audioSource.Play();
         }
+    }
+
+    void OnSongFinished()
+    {
+        songFinished = true;
+        Debug.Log("Song finished! Transitioning to results screen...");
+        StartCoroutine(TransitionToResults());
+    }
+
+    IEnumerator TransitionToResults()
+    {
+        // Wait for the specified delay
+        yield return new WaitForSeconds(delayAfterSongEnd);
+
+        // Load the results scene
+        SceneManager.LoadScene(resultsSceneName);
     }
 }

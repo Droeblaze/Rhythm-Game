@@ -7,6 +7,7 @@ public class InputManager : MonoBehaviour
     public NoteSpawner noteSpawner;
     public Transform judgementLine;
     public JudgementDisplay judgementDisplay;
+    public ScoreManager scoreManager;
 
     [Header("Timing Windows (Buttons - Lanes 3-5)")]
     public float perfectWindow = 0.05f;   // ±50ms for perfect
@@ -72,6 +73,12 @@ public class InputManager : MonoBehaviour
         for (int i = 0; i < 6; i++)
         {
             notesInLane[i] = new List<NoteVisual>();
+        }
+
+        // Find ScoreManager if not assigned
+        if (scoreManager == null)
+        {
+            scoreManager = FindObjectOfType<ScoreManager>();
         }
     }
 
@@ -292,6 +299,10 @@ public class InputManager : MonoBehaviour
             if (judgementDisplay != null)
                 judgementDisplay.ShowJudgement(judgement);
 
+            // Record the initial hit judgement
+            if (scoreManager != null)
+                scoreManager.RecordJudgement(judgement);
+
             note.MarkAsHit(); // Sets isHoldActive = true
             activeHoldNotes[note.data.laneIndex] = note;
 
@@ -305,6 +316,12 @@ public class InputManager : MonoBehaviour
         if (judgementDisplay != null)
         {
             judgementDisplay.ShowJudgement(judgement);
+        }
+
+        // Record judgement in score manager
+        if (scoreManager != null)
+        {
+            scoreManager.RecordJudgement(judgement);
         }
 
         notesInLane[note.data.laneIndex].Remove(note);
@@ -455,6 +472,10 @@ public class InputManager : MonoBehaviour
         if (judgementDisplay != null)
             judgementDisplay.ShowJudgement("Perfect!");
 
+        // Record the hold completion judgement
+        if (scoreManager != null)
+            scoreManager.RecordJudgement("Perfect!");
+
         notesInLane[lane].Remove(note);
         activeHoldNotes.Remove(lane);
         note.MarkHoldComplete();
@@ -480,6 +501,10 @@ public class InputManager : MonoBehaviour
         if (judgementDisplay != null)
             judgementDisplay.ShowJudgement(judgement);
 
+        // Record the hold release judgement
+        if (scoreManager != null)
+            scoreManager.RecordJudgement(judgement);
+
         notesInLane[lane].Remove(note);
         activeHoldNotes.Remove(lane);
         note.MarkHoldFailed();
@@ -494,6 +519,17 @@ public class InputManager : MonoBehaviour
         if (judgementDisplay != null)
         {
             judgementDisplay.ShowJudgement("Miss");
+        }
+
+        // Record the miss in score manager
+        // Hold notes count as 2 misses (initial hit + hold completion)
+        if (scoreManager != null)
+        {
+            scoreManager.RecordJudgement("Miss");
+            if (note.data.noteType == NoteType.Hold)
+            {
+                scoreManager.RecordJudgement("Miss");
+            }
         }
 
         // Clean up if this was an active hold (shouldn't normally happen, but safety check)

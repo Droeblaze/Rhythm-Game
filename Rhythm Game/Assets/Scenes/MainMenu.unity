@@ -1340,6 +1340,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71cadf73a10daf543b7e61f498e0dc94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenu
+  menuButtons: []
+  stickDeadzone: 0.5
+  selectButton: 8
+  selectIsButton: 1
+  selectAxis: 
+  triggerThreshold: 0.5
 --- !u!1 &1804546179
 GameObject:
   m_ObjectHideFlags: 0
@@ -1647,6 +1653,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 71cadf73a10daf543b7e61f498e0dc94, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::MainMenu
+  menuButtons:
+  - {fileID: 1804546181}
+  - {fileID: 1817717722}
+  - {fileID: 1992641837}
+  stickDeadzone: 0.5
+  selectButton: 3
+  selectIsButton: 1
+  selectAxis: 
+  triggerThreshold: 0.5
 --- !u!224 &1934062693
 RectTransform:
   m_ObjectHideFlags: 0
