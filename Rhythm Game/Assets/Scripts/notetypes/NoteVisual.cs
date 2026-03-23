@@ -31,6 +31,12 @@ public class NoteVisual : MonoBehaviour
     [Header("Hold Tail Sprite")]
     public Sprite holdTailSprite;
 
+    [Header("Rendering Order")]
+    [Tooltip("Base sorting order for note head")]
+    public int noteSortingOrder = 10;
+    [Tooltip("Sorting order offset for hold tail (negative = behind)")]
+    public int tailSortingOrderOffset = -5;
+
     private bool isHit = false;
     private bool isActive = true;
 
@@ -66,6 +72,28 @@ public class NoteVisual : MonoBehaviour
         }
 
         SetupVisuals();
+        SetupSortingOrders();
+    }
+
+    private void SetupSortingOrders()
+    {
+        // Ensure note head renders in front
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.sortingOrder = noteSortingOrder;
+        }
+
+        // Ensure direction indicator renders on top of the note head
+        if (directionIndicator != null)
+        {
+            directionIndicator.sortingOrder = noteSortingOrder + 1;
+        }
+
+        // Ensure hold tail always renders behind the note head
+        if (holdTailRenderer != null)
+        {
+            holdTailRenderer.sortingOrder = noteSortingOrder + tailSortingOrderOffset;
+        }
     }
 
     private void SetupVisuals()

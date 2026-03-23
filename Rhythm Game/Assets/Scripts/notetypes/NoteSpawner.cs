@@ -40,6 +40,10 @@ public class NoteSpawner : MonoBehaviour
     {
         audioSource = GetComponent<AudioSource>();
 
+        // Load settings from SettingsManager
+        scrollSpeed = SettingsManager.GetScrollSpeed();
+        audioOffset = SettingsManager.GetAudioOffset();
+
         // NEW: Load selected chart if enabled
         if (loadFromSelection)
         {

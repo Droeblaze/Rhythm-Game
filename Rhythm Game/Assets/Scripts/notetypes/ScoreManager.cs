@@ -55,6 +55,25 @@ public class ScoreManager : MonoBehaviour
         UpdateUI();
     }
 
+    void OnEnable()
+    {
+        // Subscribe to scene loaded event to clear stale UI references
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded += OnSceneLoaded;
+    }
+
+    void OnDisable()
+    {
+        // Unsubscribe from scene loaded event
+        UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+    void OnSceneLoaded(UnityEngine.SceneManagement.Scene scene, UnityEngine.SceneManagement.LoadSceneMode mode)
+    {
+        // Clear UI references when any scene loads
+        // They will be reassigned by the gameplay scene setup script if needed
+        ClearUIReferences();
+    }
+
     /// <summary>
     /// Records a judgement and updates the accuracy calculation.
     /// </summary>
@@ -131,6 +150,31 @@ public class ScoreManager : MonoBehaviour
 
         if (totalNotesText != null)
             totalNotesText.text = $"Notes: {totalNotesProcessed}";
+    }
+
+    /// <summary>
+    /// Sets UI references for the gameplay scene.
+    /// Call this from a gameplay scene initialization script.
+    /// </summary>
+    public void SetUIReferences(
+        TextMeshProUGUI accuracy,
+        TextMeshProUGUI perfect,
+        TextMeshProUGUI great,
+        TextMeshProUGUI good,
+        TextMeshProUGUI ok,
+        TextMeshProUGUI miss,
+        TextMeshProUGUI total)
+    {
+        accuracyText = accuracy;
+        perfectCountText = perfect;
+        greatCountText = great;
+        goodCountText = good;
+        okCountText = ok;
+        missCountText = miss;
+        totalNotesText = total;
+
+        // Immediately update UI with current values
+        UpdateUI();
     }
 
     /// <summary>

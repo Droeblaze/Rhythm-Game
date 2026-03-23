@@ -7,7 +7,7 @@ public class InputManager : MonoBehaviour
     public NoteSpawner noteSpawner;
     public Transform judgementLine;
     public JudgementDisplay judgementDisplay;
-    public ScoreManager scoreManager;
+    // Removed public ScoreManager field - will use singleton instead
 
     [Header("Timing Windows (Buttons - Lanes 3-5)")]
     public float perfectWindow = 0.05f;   // ±50ms for perfect
@@ -73,12 +73,6 @@ public class InputManager : MonoBehaviour
         for (int i = 0; i < 6; i++)
         {
             notesInLane[i] = new List<NoteVisual>();
-        }
-
-        // Find ScoreManager if not assigned
-        if (scoreManager == null)
-        {
-            scoreManager = FindObjectOfType<ScoreManager>();
         }
     }
 
@@ -299,9 +293,9 @@ public class InputManager : MonoBehaviour
             if (judgementDisplay != null)
                 judgementDisplay.ShowJudgement(judgement);
 
-            // Record the initial hit judgement
-            if (scoreManager != null)
-                scoreManager.RecordJudgement(judgement);
+            // Record the initial hit judgement using singleton
+            if (ScoreManager.Instance != null)
+                ScoreManager.Instance.RecordJudgement(judgement);
 
             note.MarkAsHit(); // Sets isHoldActive = true
             activeHoldNotes[note.data.laneIndex] = note;
@@ -318,10 +312,10 @@ public class InputManager : MonoBehaviour
             judgementDisplay.ShowJudgement(judgement);
         }
 
-        // Record judgement in score manager
-        if (scoreManager != null)
+        // Record judgement in score manager using singleton
+        if (ScoreManager.Instance != null)
         {
-            scoreManager.RecordJudgement(judgement);
+            ScoreManager.Instance.RecordJudgement(judgement);
         }
 
         notesInLane[note.data.laneIndex].Remove(note);
@@ -362,7 +356,7 @@ public class InputManager : MonoBehaviour
             }
             else
             {
-                // Player released early — evaluate how much was held
+                // Player released early – evaluate how much was held
                 FailHold(note, lane);
             }
         }
@@ -472,9 +466,9 @@ public class InputManager : MonoBehaviour
         if (judgementDisplay != null)
             judgementDisplay.ShowJudgement("Perfect!");
 
-        // Record the hold completion judgement
-        if (scoreManager != null)
-            scoreManager.RecordJudgement("Perfect!");
+        // Record the hold completion judgement using singleton
+        if (ScoreManager.Instance != null)
+            ScoreManager.Instance.RecordJudgement("Perfect!");
 
         notesInLane[lane].Remove(note);
         activeHoldNotes.Remove(lane);
@@ -496,14 +490,14 @@ public class InputManager : MonoBehaviour
         else
             judgement = "Miss";
 
-        Debug.Log($"Lane {lane} Hold Released! Held {heldRatio:P0} — {judgement}");
+        Debug.Log($"Lane {lane} Hold Released! Held {heldRatio:P0} – {judgement}");
 
         if (judgementDisplay != null)
             judgementDisplay.ShowJudgement(judgement);
 
-        // Record the hold release judgement
-        if (scoreManager != null)
-            scoreManager.RecordJudgement(judgement);
+        // Record the hold release judgement using singleton
+        if (ScoreManager.Instance != null)
+            ScoreManager.Instance.RecordJudgement(judgement);
 
         notesInLane[lane].Remove(note);
         activeHoldNotes.Remove(lane);
@@ -521,14 +515,14 @@ public class InputManager : MonoBehaviour
             judgementDisplay.ShowJudgement("Miss");
         }
 
-        // Record the miss in score manager
+        // Record the miss in score manager using singleton
         // Hold notes count as 2 misses (initial hit + hold completion)
-        if (scoreManager != null)
+        if (ScoreManager.Instance != null)
         {
-            scoreManager.RecordJudgement("Miss");
+            ScoreManager.Instance.RecordJudgement("Miss");
             if (note.data.noteType == NoteType.Hold)
             {
-                scoreManager.RecordJudgement("Miss");
+                ScoreManager.Instance.RecordJudgement("Miss");
             }
         }
 
@@ -548,7 +542,9 @@ public class InputManager : MonoBehaviour
     public void RegisterNote(NoteVisual note)
     {
         if (!notesInLane.ContainsKey(note.data.laneIndex))
+        {
             notesInLane[note.data.laneIndex] = new List<NoteVisual>();
+        }
 
         notesInLane[note.data.laneIndex].Add(note);
     }
@@ -556,6 +552,14 @@ public class InputManager : MonoBehaviour
     public void UnregisterNote(NoteVisual note)
     {
         if (notesInLane.ContainsKey(note.data.laneIndex))
+        {
             notesInLane[note.data.laneIndex].Remove(note);
+        }
+
+        // Also remove from active holds if present
+        if (activeHoldNotes.ContainsKey(note.data.laneIndex) && activeHoldNotes[note.data.laneIndex] == note)
+        {
+            activeHoldNotes.Remove(note.data.laneIndex);
+        }
     }
 }

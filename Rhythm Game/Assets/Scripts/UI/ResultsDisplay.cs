@@ -132,12 +132,8 @@ public class ResultsDisplay : MonoBehaviour
 
     public void ReturnToMainMenu()
     {
-        // Reset score data for next play session
-        if (ScoreManager.Instance != null)
-        {
-            ScoreManager.Instance.ResetStats();
-        }
-
+        // Don't reset stats here - they'll be reset when starting a new gameplay session
+        // This allows the results to persist until the next game starts
         SceneManager.LoadScene(mainMenuSceneName);
     }
 }
