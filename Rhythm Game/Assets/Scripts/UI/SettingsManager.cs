@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 public class SettingsManager : MonoBehaviour
@@ -71,7 +72,7 @@ public class SettingsManager : MonoBehaviour
     public void IncreaseScrollSpeed()
     {
         currentScrollSpeed = Mathf.Min(currentScrollSpeed + adjustmentIncrement, scrollSpeedMax);
-        currentScrollSpeed = Mathf.Round(currentScrollSpeed * 100f) / 100f; // Round to 2 decimal places
+        currentScrollSpeed = Mathf.Round(currentScrollSpeed * 100f) / 100f;
         SaveSettings();
         UpdateUI();
     }
@@ -79,7 +80,7 @@ public class SettingsManager : MonoBehaviour
     public void DecreaseScrollSpeed()
     {
         currentScrollSpeed = Mathf.Max(currentScrollSpeed - adjustmentIncrement, scrollSpeedMin);
-        currentScrollSpeed = Mathf.Round(currentScrollSpeed * 100f) / 100f; // Round to 2 decimal places
+        currentScrollSpeed = Mathf.Round(currentScrollSpeed * 100f) / 100f;
         SaveSettings();
         UpdateUI();
     }
@@ -87,7 +88,7 @@ public class SettingsManager : MonoBehaviour
     public void IncreaseAudioOffset()
     {
         currentAudioOffset = Mathf.Min(currentAudioOffset + adjustmentIncrement, audioOffsetMax);
-        currentAudioOffset = Mathf.Round(currentAudioOffset * 1000f) / 1000f; // Round to 3 decimal places
+        currentAudioOffset = Mathf.Round(currentAudioOffset * 1000f) / 1000f;
         SaveSettings();
         UpdateUI();
     }
@@ -95,7 +96,7 @@ public class SettingsManager : MonoBehaviour
     public void DecreaseAudioOffset()
     {
         currentAudioOffset = Mathf.Max(currentAudioOffset - adjustmentIncrement, audioOffsetMin);
-        currentAudioOffset = Mathf.Round(currentAudioOffset * 1000f) / 1000f; // Round to 3 decimal places
+        currentAudioOffset = Mathf.Round(currentAudioOffset * 1000f) / 1000f;
         SaveSettings();
         UpdateUI();
     }
@@ -106,6 +107,11 @@ public class SettingsManager : MonoBehaviour
         currentAudioOffset = defaultAudioOffset;
         SaveSettings();
         UpdateUI();
+    }
+
+    public void OpenControls()
+    {
+        SceneManager.LoadScene("Controls");
     }
 
     void UpdateUI()

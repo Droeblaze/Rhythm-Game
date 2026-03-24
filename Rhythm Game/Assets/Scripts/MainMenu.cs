@@ -5,18 +5,13 @@ using UnityEngine.UI;
 public class MainMenu : MonoBehaviour
 {
     [Header("Menu Buttons")]
-    public Button[] menuButtons; // Assign in order: Play, Options, Quit (or whatever order you prefer)
+    public Button[] menuButtons;
 
     [Header("Input Settings")]
     public float stickDeadzone = 0.5f;
-    public int selectButton = 3; 
-    public bool selectIsButton = true;
-    public string selectAxis = "";
-    public float triggerThreshold = 0.5f;
 
     private int currentButtonIndex = 0;
     private int previousVertDir = 0;
-    private bool previousSelectState = false;
 
     void Start()
     {
@@ -34,17 +29,17 @@ public class MainMenu : MonoBehaviour
 
     void CheckNavigationInput()
     {
-        float vertical = Input.GetAxisRaw("Vertical");
-        int vertDir = vertical < -stickDeadzone ? -1 : (vertical > stickDeadzone ? 1 : 0);
+        if (InputBindingManager.Instance == null) return;
 
-        // Detect vertical direction change
+        int vertDir = InputBindingManager.Instance.GetVerticalDir(stickDeadzone);
+
         if (vertDir != previousVertDir && vertDir != 0)
         {
-            if (vertDir == 1) // Up
+            if (vertDir == 1)
             {
                 NavigateUp();
             }
-            else if (vertDir == -1) // Down
+            else if (vertDir == -1)
             {
                 NavigateDown();
             }
@@ -55,31 +50,14 @@ public class MainMenu : MonoBehaviour
 
     void CheckSelectInput()
     {
-        bool selectPressed = GetSelectButtonDown();
+        if (InputBindingManager.Instance == null) return;
+
+        bool selectPressed = InputBindingManager.Instance.GetBindingDown(
+            InputBindingManager.Instance.Bindings.button1);
 
         if (selectPressed && menuButtons.Length > 0)
         {
             menuButtons[currentButtonIndex].onClick.Invoke();
-        }
-    }
-
-    bool GetSelectButtonDown()
-    {
-        if (selectIsButton)
-        {
-            return Input.GetKeyDown(KeyCode.JoystickButton0 + selectButton);
-        }
-        else
-        {
-            if (string.IsNullOrEmpty(selectAxis)) return false;
-
-            float axisValue = Input.GetAxis(selectAxis);
-            bool currentlyPressed = axisValue > triggerThreshold;
-            bool wasPressed = previousSelectState;
-
-            previousSelectState = currentlyPressed;
-
-            return currentlyPressed && !wasPressed;
         }
     }
 
@@ -89,7 +67,7 @@ public class MainMenu : MonoBehaviour
 
         currentButtonIndex--;
         if (currentButtonIndex < 0)
-            currentButtonIndex = menuButtons.Length - 1; // Wrap to bottom
+            currentButtonIndex = menuButtons.Length - 1;
 
         SelectButton(currentButtonIndex);
     }
@@ -100,7 +78,7 @@ public class MainMenu : MonoBehaviour
 
         currentButtonIndex++;
         if (currentButtonIndex >= menuButtons.Length)
-            currentButtonIndex = 0; // Wrap to top
+            currentButtonIndex = 0;
 
         SelectButton(currentButtonIndex);
     }
@@ -113,7 +91,6 @@ public class MainMenu : MonoBehaviour
 
     public void PlayGame()
     {
-        //Load next scene in the list
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
     }
 

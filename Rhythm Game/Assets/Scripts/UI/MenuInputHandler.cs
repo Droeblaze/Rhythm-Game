@@ -8,13 +8,8 @@ public class MenuInputHandler : MonoBehaviour
 
     [Header("Input Settings")]
     public float stickDeadzone = 0.5f;
-    public int selectButton = 8; // Lane 3 top button
-    public bool selectIsButton = true;
-    public string selectAxis = "";
-    public float triggerThreshold = 0.5f;
 
     private int previousVertDir = 0;
-    private bool previousSelectState = false;
 
     void Update()
     {
@@ -25,18 +20,17 @@ public class MenuInputHandler : MonoBehaviour
     void CheckNavigationInput()
     {
         if (snapScrollRect == null) return;
+        if (InputBindingManager.Instance == null) return;
 
-        float vertical = Input.GetAxisRaw("Vertical");
-        int vertDir = vertical < -stickDeadzone ? -1 : (vertical > stickDeadzone ? 1 : 0);
+        int vertDir = InputBindingManager.Instance.GetVerticalDir(stickDeadzone);
 
-        // Detect vertical direction change
         if (vertDir != previousVertDir && vertDir != 0)
         {
-            if (vertDir == 1) // Up
+            if (vertDir == 1)
             {
                 snapScrollRect.NavigateUp();
             }
-            else if (vertDir == -1) // Down
+            else if (vertDir == -1)
             {
                 snapScrollRect.NavigateDown();
             }
@@ -48,32 +42,15 @@ public class MenuInputHandler : MonoBehaviour
     void CheckSelectInput()
     {
         if (snapScrollRect == null || selectionManager == null) return;
+        if (InputBindingManager.Instance == null) return;
 
-        bool selectPressed = GetSelectButtonDown();
+        // Use Button 1 (Lane3 Top) as the select/confirm button
+        bool selectPressed = InputBindingManager.Instance.GetBindingDown(
+            InputBindingManager.Instance.Bindings.button1);
 
         if (selectPressed)
         {
             SelectCurrentChart();
-        }
-    }
-
-    bool GetSelectButtonDown()
-    {
-        if (selectIsButton)
-        {
-            return Input.GetKeyDown(KeyCode.JoystickButton0 + selectButton);
-        }
-        else
-        {
-            if (string.IsNullOrEmpty(selectAxis)) return false;
-
-            float axisValue = Input.GetAxis(selectAxis);
-            bool currentlyPressed = axisValue > triggerThreshold;
-            bool wasPressed = previousSelectState;
-
-            previousSelectState = currentlyPressed;
-
-            return currentlyPressed && !wasPressed;
         }
     }
 
