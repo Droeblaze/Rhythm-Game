@@ -12,18 +12,22 @@ public class InputManager : MonoBehaviour
     public float perfectWindow = 0.05f;
     public float greatWindow = 0.1f;
     public float goodWindow = 0.15f;
-    public float missWindow = 0.2f;
+    public float okWindow = 0.2f;
+    public float missWindow = 0.25f;
 
     [Header("Timing Windows (Stick - Lanes 0-2)")]
-    public float stickPerfectWindow = 0.08f;
-    public float stickGreatWindow = 0.15f;
-    public float stickGoodWindow = 0.2f;
-    public float stickMissWindow = 0.3f;
+    public float stickPerfectWindow = 0.07f;
+    public float stickGreatWindow = 0.14f;
+    public float stickGoodWindow = 0.21f;
+    public float stickOkWindow = 0.28f;
+    public float stickMissWindow = 0.35f;
 
     [Header("Hold Note Settings")]
     public float holdPerfectThreshold = 0.95f;
-    public float holdGreatThreshold = 0.80f;
-    public float holdGoodThreshold = 0.60f;
+    public float holdGreatThreshold = 0.90f;
+    public float holdGoodThreshold = 0.85f;
+    public float holdOkThreshold = 0.80f;
+    public float holdGracePeriod = 0.30f;
 
     [Header("Stick Settings")]
     public float stickDeadzone = 0.5f;
@@ -31,6 +35,9 @@ public class InputManager : MonoBehaviour
     private Dictionary<int, List<NoteVisual>> notesInLane = new Dictionary<int, List<NoteVisual>>();
 
     private Dictionary<int, NoteVisual> activeHoldNotes = new Dictionary<int, NoteVisual>();
+
+    // Tracks how long a hold has been continuously released per lane
+    private Dictionary<int, float> holdReleaseTimers = new Dictionary<int, float>();
 
     private int previousHorizDir = 0;
     private int previousVertDir = 0;
@@ -160,25 +167,27 @@ public class InputManager : MonoBehaviour
         if (!notesInLane.ContainsKey(lane)) return;
 
         NoteVisual closestNote = null;
-        float closestDistance = float.MaxValue;
+        float closestAbsDistance = float.MaxValue;
+
+        float maxHitDistance = stickMissWindow * noteSpawner.scrollSpeed;
 
         foreach (NoteVisual note in notesInLane[lane])
         {
             if (note == null || note.data.stickDirection != direction) continue;
-            if (note.isHoldActive) continue;
+            if (note.isHoldActive || note.holdFinished) continue;
 
-            float distance = Mathf.Abs(note.transform.position.y - judgementLine.position.y);
+            float absDistance = Mathf.Abs(note.transform.position.y - judgementLine.position.y);
 
-            if (distance < closestDistance && distance <= stickMissWindow * 5f)
+            if (absDistance < closestAbsDistance && absDistance <= maxHitDistance)
             {
-                closestDistance = distance;
+                closestAbsDistance = absDistance;
                 closestNote = note;
             }
         }
 
         if (closestNote != null)
         {
-            HitNote(closestNote, closestDistance, true);
+            HitNote(closestNote, closestAbsDistance, true);
         }
     }
 
@@ -187,25 +196,27 @@ public class InputManager : MonoBehaviour
         if (!notesInLane.ContainsKey(lane)) return;
 
         NoteVisual closestNote = null;
-        float closestDistance = float.MaxValue;
+        float closestAbsDistance = float.MaxValue;
+
+        float maxHitDistance = missWindow * noteSpawner.scrollSpeed;
 
         foreach (NoteVisual note in notesInLane[lane])
         {
             if (note == null || note.data.buttonRow != row) continue;
-            if (note.isHoldActive) continue;
+            if (note.isHoldActive || note.holdFinished) continue;
 
-            float distance = Mathf.Abs(note.transform.position.y - judgementLine.position.y);
+            float absDistance = Mathf.Abs(note.transform.position.y - judgementLine.position.y);
 
-            if (distance < closestDistance && distance <= missWindow * 5f)
+            if (absDistance < closestAbsDistance && absDistance <= maxHitDistance)
             {
-                closestDistance = distance;
+                closestAbsDistance = absDistance;
                 closestNote = note;
             }
         }
 
         if (closestNote != null)
         {
-            HitNote(closestNote, closestDistance, false);
+            HitNote(closestNote, closestAbsDistance, false);
         }
     }
 
@@ -216,6 +227,7 @@ public class InputManager : MonoBehaviour
         float pWindow = isStickLane ? stickPerfectWindow : perfectWindow;
         float grWindow = isStickLane ? stickGreatWindow : greatWindow;
         float goWindow = isStickLane ? stickGoodWindow : goodWindow;
+        float oWindow = isStickLane ? stickOkWindow : okWindow;
         float mWindow = isStickLane ? stickMissWindow : missWindow;
 
         string judgement = "Miss";
@@ -225,8 +237,10 @@ public class InputManager : MonoBehaviour
             judgement = "Great!";
         else if (timing <= goWindow)
             judgement = "Good";
-        else if (timing <= mWindow)
+        else if (timing <= oWindow)
             judgement = "OK";
+        else if (timing <= mWindow)
+            judgement = "Miss";
 
         if (note.data.noteType == NoteType.Hold && judgement != "Miss")
         {
@@ -238,8 +252,18 @@ public class InputManager : MonoBehaviour
             if (ScoreManager.Instance != null)
                 ScoreManager.Instance.RecordJudgement(judgement);
 
+            // If there's already an active hold in this lane, fail it first
+            // so its isHoldActive flag gets cleared and NoteSpawner stops pinning it
+            int lane = note.data.laneIndex;
+            if (activeHoldNotes.ContainsKey(lane) && activeHoldNotes[lane] != null)
+            {
+                NoteVisual previousHold = activeHoldNotes[lane];
+                FailHold(previousHold, lane);
+            }
+
             note.MarkAsHit();
             activeHoldNotes[note.data.laneIndex] = note;
+            holdReleaseTimers[note.data.laneIndex] = 0f;
             return;
         }
 
@@ -272,23 +296,48 @@ public class InputManager : MonoBehaviour
             if (note == null)
             {
                 activeHoldNotes.Remove(lane);
+                holdReleaseTimers.Remove(lane);
                 continue;
             }
 
             bool stillHeld = IsInputStillHeld(note);
 
-            if (stillHeld)
-            {
-                note.holdTimeRemaining -= Time.deltaTime;
+            // Always count down hold time while the hold is active,
+            // even during the grace period, so the tail keeps shrinking
+            note.holdTimeRemaining -= Time.deltaTime;
 
-                if (note.holdTimeRemaining <= 0f)
+            if (note.holdTimeRemaining <= 0f)
+            {
+                // Hold duration fully elapsed — check if still held or within grace
+                if (stillHeld || holdReleaseTimers[lane] < holdGracePeriod)
                 {
                     CompleteHold(note, lane);
                 }
+                else
+                {
+                    FailHold(note, lane);
+                }
+                continue;
+            }
+
+            if (stillHeld)
+            {
+                // Input is held — reset the grace timer
+                holdReleaseTimers[lane] = 0f;
             }
             else
             {
-                FailHold(note, lane);
+                // Input released — accumulate grace timer
+                if (!holdReleaseTimers.ContainsKey(lane))
+                    holdReleaseTimers[lane] = 0f;
+
+                holdReleaseTimers[lane] += Time.deltaTime;
+
+                if (holdReleaseTimers[lane] >= holdGracePeriod)
+                {
+                    FailHold(note, lane);
+                }
+                // else: still within grace period, hold stays alive
             }
         }
     }
@@ -366,12 +415,14 @@ public class InputManager : MonoBehaviour
 
         notesInLane[lane].Remove(note);
         activeHoldNotes.Remove(lane);
+        holdReleaseTimers.Remove(lane);
         note.MarkHoldComplete();
     }
 
     void FailHold(NoteVisual note, int lane)
     {
         float heldRatio = 1f - (note.holdTimeRemaining / note.data.holdDuration);
+        heldRatio = Mathf.Clamp01(heldRatio);
 
         string judgement;
         if (heldRatio >= holdPerfectThreshold)
@@ -380,6 +431,8 @@ public class InputManager : MonoBehaviour
             judgement = "Great!";
         else if (heldRatio >= holdGoodThreshold)
             judgement = "Good";
+        else if (heldRatio >= holdOkThreshold)
+            judgement = "OK";
         else
             judgement = "Miss";
 
@@ -393,6 +446,7 @@ public class InputManager : MonoBehaviour
 
         notesInLane[lane].Remove(note);
         activeHoldNotes.Remove(lane);
+        holdReleaseTimers.Remove(lane);
         note.MarkHoldFailed();
     }
 
@@ -417,6 +471,7 @@ public class InputManager : MonoBehaviour
         if (activeHoldNotes.ContainsKey(note.data.laneIndex) && activeHoldNotes[note.data.laneIndex] == note)
         {
             activeHoldNotes.Remove(note.data.laneIndex);
+            holdReleaseTimers.Remove(note.data.laneIndex);
         }
 
         if (notesInLane.ContainsKey(note.data.laneIndex))
@@ -445,6 +500,7 @@ public class InputManager : MonoBehaviour
         if (activeHoldNotes.ContainsKey(note.data.laneIndex) && activeHoldNotes[note.data.laneIndex] == note)
         {
             activeHoldNotes.Remove(note.data.laneIndex);
+            holdReleaseTimers.Remove(note.data.laneIndex);
         }
     }
 }

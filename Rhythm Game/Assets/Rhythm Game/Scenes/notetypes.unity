@@ -2108,38 +2108,22 @@ MonoBehaviour:
   noteSpawner: {fileID: 1456298305}
   judgementLine: {fileID: 140439801}
   judgementDisplay: {fileID: 977604303}
-  scoreManager: {fileID: 691212071}
   perfectWindow: 0.05
   greatWindow: 0.1
   goodWindow: 0.15
-  missWindow: 0.2
-  stickPerfectWindow: 0.08
-  stickGreatWindow: 0.15
-  stickGoodWindow: 0.2
-  stickMissWindow: 0.3
+  okWindow: 0.2
+  missWindow: 0.25
+  stickPerfectWindow: 0.07
+  stickGreatWindow: 0.14
+  stickGoodWindow: 0.21
+  stickOkWindow: 0.28
+  stickMissWindow: 0.35
   holdPerfectThreshold: 0.95
-  holdGreatThreshold: 0.8
-  holdGoodThreshold: 0.6
+  holdGreatThreshold: 0.9
+  holdGoodThreshold: 0.85
+  holdOkThreshold: 0.8
+  holdGracePeriod: 0.3
   stickDeadzone: 0.5
-  lane3TopIsButton: 1
-  lane3TopButton: 3
-  lane3TopAxis: 
-  lane3BottomIsButton: 1
-  lane3BottomButton: 1
-  lane3BottomAxis: 
-  lane4TopIsButton: 1
-  lane4TopButton: 2
-  lane4TopAxis: 
-  lane4BottomIsButton: 1
-  lane4BottomButton: 0
-  lane4BottomAxis: 
-  lane5TopIsButton: 1
-  lane5TopButton: 5
-  lane5TopAxis: 
-  lane5BottomIsButton: 0
-  lane5BottomButton: 0
-  lane5BottomAxis: RightTrigger
-  triggerThreshold: 0.5
 --- !u!1 &1791180064
 GameObject:
   m_ObjectHideFlags: 0
