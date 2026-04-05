@@ -9,16 +9,16 @@ public class InputManager : MonoBehaviour
     public JudgementDisplay judgementDisplay;
 
     [Header("Timing Windows (Buttons - Lanes 3-5)")]
-    public float perfectWindow = 0.05f;   // ±50ms for perfect
-    public float greatWindow = 0.1f;      // ±100ms for great
-    public float goodWindow = 0.15f;      // ±150ms for good
-    public float missWindow = 0.2f;       // ±200ms, beyond this is a miss
+    public float perfectWindow = 2.05f;   // Â±50ms for perfect
+    public float greatWindow = 0.1f;      // Â±100ms for great
+    public float goodWindow = 0.15f;      // Â±150ms for good
+    public float missWindow = 0.2f;       // Â±200ms, beyond this is a miss
 
     [Header("Timing Windows (Stick - Lanes 0-2)")]
-    public float stickPerfectWindow = 0.08f;   // ±80ms for perfect
-    public float stickGreatWindow = 0.15f;     // ±150ms for great
-    public float stickGoodWindow = 0.2f;       // ±200ms for good
-    public float stickMissWindow = 0.3f;       // ±300ms, beyond this is a miss
+    public float stickPerfectWindow = 0.08f;   // Â±80ms for perfect
+    public float stickGreatWindow = 0.15f;     // Â±150ms for great
+    public float stickGoodWindow = 0.2f;       // Â±200ms for good
+    public float stickMissWindow = 0.3f;       // Â±300ms, beyond this is a miss
 
     [Header("Stick Settings")]
     public float stickDeadzone = 0.5f; // Threshold for stick input
@@ -49,6 +49,18 @@ public class InputManager : MonoBehaviour
 
     [Header("Trigger Settings")]
     public float triggerThreshold = 0.5f;
+
+    // --- ADDED: Keyboard KeyCode overrides ---
+    // Written at runtime by ControlProfileApplicator. Do not set these manually
+    // in the Inspector â€” they are overwritten on every scene load.
+    // KeyCode.None means this override is inactive (joystick/axis path is used instead).
+    [Header("Keyboard Key Overrides (runtime - managed by ControlProfileApplicator)")]
+    public KeyCode lane3TopKey    = KeyCode.None;
+    public KeyCode lane3BottomKey = KeyCode.None;
+    public KeyCode lane4TopKey    = KeyCode.None;
+    public KeyCode lane4BottomKey = KeyCode.None;
+    public KeyCode lane5TopKey    = KeyCode.None;
+    public KeyCode lane5BottomKey = KeyCode.None;
 
     private Dictionary<int, List<NoteVisual>> notesInLane = new Dictionary<int, List<NoteVisual>>();
     private Dictionary<string, bool> previousTriggerStates = new Dictionary<string, bool>();
@@ -128,28 +140,30 @@ public class InputManager : MonoBehaviour
         }
     }
 
+    // Now passes keyboard key overrides through to CheckLaneButtons
     void CheckButtonInputs()
     {
         // Lane 3 buttons
-        CheckLaneButtons(3, lane3TopIsButton, lane3TopButton, lane3TopAxis,
-                           lane3BottomIsButton, lane3BottomButton, lane3BottomAxis);
+        CheckLaneButtons(3, lane3TopIsButton, lane3TopButton, lane3TopAxis, lane3TopKey,
+                            lane3BottomIsButton, lane3BottomButton, lane3BottomAxis, lane3BottomKey);
 
         // Lane 4 buttons
-        CheckLaneButtons(4, lane4TopIsButton, lane4TopButton, lane4TopAxis,
-                           lane4BottomIsButton, lane4BottomButton, lane4BottomAxis);
+        CheckLaneButtons(4, lane4TopIsButton, lane4TopButton, lane4TopAxis, lane4TopKey,
+                            lane4BottomIsButton, lane4BottomButton, lane4BottomAxis, lane4BottomKey);
 
         // Lane 5 buttons
-        CheckLaneButtons(5, lane5TopIsButton, lane5TopButton, lane5TopAxis,
-                           lane5BottomIsButton, lane5BottomButton, lane5BottomAxis);
+        CheckLaneButtons(5, lane5TopIsButton, lane5TopButton, lane5TopAxis, lane5TopKey,
+                            lane5BottomIsButton, lane5BottomButton, lane5BottomAxis, lane5BottomKey);
     }
 
-    void CheckLaneButtons(int lane, bool topIsButton, int topBtn, string topAxis,
-                                     bool bottomIsButton, int bottomBtn, string bottomAxis)
+    // MODIFIED: accepts topKey / bottomKey so keyboard profile can override joystick path
+    void CheckLaneButtons(int lane, bool topIsButton, int topBtn, string topAxis, KeyCode topKey,
+                                     bool bottomIsButton, int bottomBtn, string bottomAxis, KeyCode bottomKey)
     {
-        bool topPressed = GetInputDown(topIsButton, topBtn, topAxis);
-        bool bottomPressed = GetInputDown(bottomIsButton, bottomBtn, bottomAxis);
-        bool topHeld = GetInputHeld(topIsButton, topBtn, topAxis);
-        bool bottomHeld = GetInputHeld(bottomIsButton, bottomBtn, bottomAxis);
+        bool topPressed = GetInputDown(topIsButton, topBtn, topAxis, topKey);
+        bool bottomPressed = GetInputDown(bottomIsButton, bottomBtn, bottomAxis, bottomKey);
+        bool topHeld = GetInputHeld(topIsButton, topBtn, topAxis, topKey);
+        bool bottomHeld = GetInputHeld(bottomIsButton, bottomBtn, bottomAxis, bottomKey);
         bool bothHeld = topHeld && bottomHeld;
 
         if (bothHeld && (topPressed || bottomPressed))
@@ -166,8 +180,12 @@ public class InputManager : MonoBehaviour
         }
     }
 
-    bool GetInputDown(bool isButton, int buttonNum, string axisName)
+    // MODIFIED: checks keyOverride first; falls through to original joystick/axis logic unchanged
+    bool GetInputDown(bool isButton, int buttonNum, string axisName, KeyCode keyOverride = KeyCode.None)
     {
+        if (keyOverride != KeyCode.None)
+            return Input.GetKeyDown(keyOverride);
+
         if (isButton)
         {
             return Input.GetKeyDown(KeyCode.JoystickButton0 + buttonNum);
@@ -186,8 +204,12 @@ public class InputManager : MonoBehaviour
         }
     }
 
-    bool GetInputHeld(bool isButton, int buttonNum, string axisName)
+    // MODIFIED: checks keyOverride first; falls through to original joystick/axis logic unchanged
+    bool GetInputHeld(bool isButton, int buttonNum, string axisName, KeyCode keyOverride = KeyCode.None)
     {
+        if (keyOverride != KeyCode.None)
+            return Input.GetKey(keyOverride);
+
         if (isButton)
         {
             return Input.GetKey(KeyCode.JoystickButton0 + buttonNum);
