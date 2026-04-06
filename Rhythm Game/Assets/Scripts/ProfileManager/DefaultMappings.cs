@@ -1,33 +1,32 @@
-// DefaultMappings.cs
 // Static lookup table — returns the correct InputProfileData for each ControlProfile.
 // This is the ONLY place where button numbers, axis names, and key codes are defined.
 // To change any default binding, edit ONLY this file.
 //
-// ─── FIGHT STICK (PRIMARY PROFILE) ───────────────────────────────────────────
+// FIGHT STICK (PRIMARY PROFILE)
 //   Uses the button numbers the team already configured in InputManager defaults.
 //   Lane 3: JoystickButton8  / JoystickButton9
 //   Lane 4: JoystickButton10 / JoystickButton11
 //   Lane 5: JoystickButton12 / RightTrigger axis
 //
-// ─── GAMEPAD (FALLBACK) ───────────────────────────────────────────────────────
+// GAMEPAD (FALLBACK)
 //   Standard Xbox controller Unity button mapping:
 //   JoystickButton0=A, 1=B, 2=X, 3=Y, 4=LB, 5=RB, RightTrigger axis for RT
 //   Lane 3: A(0) top / X(2) bottom
 //   Lane 4: B(1) top / Y(3) bottom
 //   Lane 5: LB(4) top / RightTrigger axis bottom
 //
-// ─── KEYBOARD (FALLBACK) ──────────────────────────────────────────────────────
+// KEYBOARD (FALLBACK)
 //   Lanes 0-2 already work via Unity's Horizontal/Vertical axes (arrow keys/WASD).
 //   Lanes 3-5 use KeyCode overrides (new fields added to InputManager).
 //   Top row:    J / K / L  (lanes 3 / 4 / 5)
 //   Bottom row: U / I / O  (lanes 3 / 4 / 5)
-//   → Edit these in the Keyboard() method below if your team chose different keys.
+//   → Edit these in the Keyboard() method below if anyone chose different keys.
 
 using UnityEngine;
 
 public static class DefaultMappings
 {
-    // ── Public entry point ────────────────────────────────────────────────────
+    // Public entry point
 
     public static InputProfileData Get(ControlProfile profile)
     {
@@ -40,7 +39,7 @@ public static class DefaultMappings
         }
     }
 
-    // ── FightStick ─────────────────────────────────────────────────────────────
+    // FightStick
     // Matches InputManager's existing serialized defaults exactly.
     // This profile is the primary design target for this game.
 
@@ -65,7 +64,7 @@ public static class DefaultMappings
         }
     };
 
-    // ── Gamepad ─────────────────────────────────────────────────────────────────
+    //  Gamepad
     // Standard Xbox face button layout. If using PS controller, Unity remaps
     // Cross/Square/Circle/Triangle to 0/2/1/3 — same numbers, different labels.
 
@@ -90,7 +89,7 @@ public static class DefaultMappings
         }
     };
 
-    // ── Keyboard ────────────────────────────────────────────────────────────────
+    // Keyboard 
     // Lanes 0-2: arrow keys / WASD already drive Horizontal+Vertical axes — no config needed.
     // Lanes 3-5: two key rows. topKey / bottomKey are read via new KeyCode fields
     //            added to InputManager (see InputManager_KeyboardAdditions.cs).

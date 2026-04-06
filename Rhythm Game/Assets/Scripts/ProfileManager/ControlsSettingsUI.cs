@@ -1,10 +1,4 @@
-// ControlsSettingsUI.cs
-// ─────────────────────────────────────────────────────────────────────────────
-// Attach to your settings/controls panel in the main menu scene.
-// Phase 2 scope: shows current profile, allows switching profile and
-// resetting to defaults. Full per-binding rebind UI is Phase 3.
-//
-// ── SCENE SETUP ──────────────────────────────────────────────────────────────
+// SCENE SETUP 
 // Wire in Inspector:
 //   currentProfileText  — shows "Current Profile: Fight Stick"
 //   fightStickButton    — switch to fight stick profile
@@ -84,12 +78,9 @@ public class ControlsSettingsUI : MonoBehaviour
 
     void ResetToDefaults()
     {
-        // Nothing extra to reset in Phase 2 (no custom bindings yet).
-        // When Phase 3 (rebinding) is implemented, delete custom binding keys here.
+        // When rebinding is implemented, delete custom binding keys here.
         string saved = PlayerPrefs.GetString(ControlProfileApplicator.KEY_PROFILE, "FightStick");
         Debug.Log($"[ControlsSettings] Reset to defaults for profile: {saved} (no custom bindings to clear yet)");
-
-        // Future Phase 3: PlayerPrefs.DeleteKey("custom_bindings"); etc.
     }
 
     void OnBack()
@@ -100,7 +91,7 @@ public class ControlsSettingsUI : MonoBehaviour
             gameObject.SetActive(false);
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    // Helpers
 
     void SetButtonColor(Button btn, Color color)
     {
