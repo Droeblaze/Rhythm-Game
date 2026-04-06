@@ -2,31 +2,46 @@
 // This is the ONLY place where button numbers, axis names, and key codes are defined.
 // To change any default binding, edit ONLY this file.
 //
-// FIGHT STICK (PRIMARY PROFILE)
-//   Uses the button numbers the team already configured in InputManager defaults.
-//   Lane 3: JoystickButton8  / JoystickButton9
-//   Lane 4: JoystickButton10 / JoystickButton11
-//   Lane 5: JoystickButton12 / RightTrigger axis
+// ── FIGHT STICK (PRIMARY / hero profile) ──────────────────────────────────────
+//   Uses the button numbers already configured in InputManager's serialized defaults.
+//   Lane 3: JoystickButton8  (top) / JoystickButton9  (bottom)
+//   Lane 4: JoystickButton10 (top) / JoystickButton11 (bottom)
+//   Lane 5: JoystickButton12 (top) / RightTrigger axis (bottom)
 //
-// GAMEPAD (FALLBACK)
-//   Standard Xbox controller Unity button mapping:
-//   JoystickButton0=A, 1=B, 2=X, 3=Y, 4=LB, 5=RB, RightTrigger axis for RT
-//   Lane 3: A(0) top / X(2) bottom
-//   Lane 4: B(1) top / Y(3) bottom
-//   Lane 5: LB(4) top / RightTrigger axis bottom
+//   2-button chord (top + bottom same lane):  handled by ButtonRow.Both in InputManager ✓
+//   4-button chord (two full lanes at once):  requires cross-lane detection — see TODO below
 //
-// KEYBOARD (FALLBACK)
-//   Lanes 0-2 already work via Unity's Horizontal/Vertical axes (arrow keys/WASD).
-//   Lanes 3-5 use KeyCode overrides (new fields added to InputManager).
-//   Top row:    J / K / L  (lanes 3 / 4 / 5)
-//   Bottom row: U / I / O  (lanes 3 / 4 / 5)
-//   → Edit these in the Keyboard() method below if anyone chose different keys.
+// ── GAMEPAD (fallback) ────────────────────────────────────────────────────────
+//   Standard Xbox/PS face button layout.
+//   Lane 3: A/Cross (0) top    / X/Square  (2) bottom
+//   Lane 4: B/Circle (1) top   / Y/Triangle(3) bottom
+//   Lane 5: LB/L1   (4) top   / RightTrigger axis bottom
+//
+// ── KEYBOARD (fallback) ───────────────────────────────────────────────────────
+//   Lanes 0-2: arrow keys / WASD drive Horizontal+Vertical axes — no config needed.
+//   Lanes 3-5 layout (vertical pairs, top row is higher on keyboard):
+//
+//   Lane:      3      4      5
+//   Top row:   U      I      O      ← upper keys (physically higher)
+//   Bot row:   J      K      L      ← lower keys (physically lower)
+//
+//   2-button chord: hold both U+J, I+K, or O+L simultaneously → ButtonRow.Both ✓
+//   4-button chord: requires cross-lane detection — see TODO below
+//
+// ── TODO: 4-BUTTON CHORD SUPPORT ─────────────────────────────────────────────
+//   When a note requires pressing two full lanes simultaneously (e.g. all of
+//   lane 3 AND lane 4 at once), InputManager's current per-lane CheckLaneButtons
+//   loop cannot detect this. A cross-lane chord detection pass will need to be
+//   added to InputManager before 4-button chord notes can be charted.
+//   This file will not need changes for that — the button/key definitions here
+//   are already correct. Only InputManager's CheckButtonInputs needs a new
+//   multi-lane simultaneous check added to it.
 
 using UnityEngine;
 
 public static class DefaultMappings
 {
-    // Public entry point
+    // ── Public entry point ────────────────────────────────────────────────────
 
     public static InputProfileData Get(ControlProfile profile)
     {
@@ -35,13 +50,11 @@ public static class DefaultMappings
             case ControlProfile.FightStick: return FightStick();
             case ControlProfile.Gamepad:    return Gamepad();
             case ControlProfile.Keyboard:   return Keyboard();
-            default:                        return FightStick(); // safe fallback to hero profile
+            default:                        return FightStick(); // hero profile is the safe fallback
         }
     }
 
-    // FightStick
-    // Matches InputManager's existing serialized defaults exactly.
-    // This profile is the primary design target for this game.
+    // ── FightStick ─────────────────────────────────────────────────────────────
 
     static InputProfileData FightStick() => new InputProfileData
     {
@@ -64,9 +77,7 @@ public static class DefaultMappings
         }
     };
 
-    //  Gamepad
-    // Standard Xbox face button layout. If using PS controller, Unity remaps
-    // Cross/Square/Circle/Triangle to 0/2/1/3 — same numbers, different labels.
+    // ── Gamepad ─────────────────────────────────────────────────────────────────
 
     static InputProfileData Gamepad() => new InputProfileData
     {
@@ -85,15 +96,17 @@ public static class DefaultMappings
         lane5 = new LaneButtonConfig
         {
             topIsButton    = true,  topButton    = 4,  topAxis    = "", topKey    = KeyCode.None, // LB / L1
-            bottomIsButton = false, bottomButton = 0,  bottomAxis = "RightTrigger", bottomKey = KeyCode.None // RT / R2
+            bottomIsButton = false, bottomButton = 0,  bottomAxis = "RightTrigger", bottomKey = KeyCode.None
         }
     };
 
-    // Keyboard 
-    // Lanes 0-2: arrow keys / WASD already drive Horizontal+Vertical axes — no config needed.
-    // Lanes 3-5: two key rows. topKey / bottomKey are read via new KeyCode fields
-    //            added to InputManager (see InputManager_KeyboardAdditions.cs).
-    // isButton=false + axis="" + key=<KeyCode> = keyboard override path.
+    // ── Keyboard ────────────────────────────────────────────────────────────────
+    // Keys arranged as vertical pairs matching the fight stick's top/bottom layout.
+    // Top row = physically higher keys, Bottom row = physically lower keys.
+    //
+    //   Lane:   3    4    5
+    //   Top:    U    I    O
+    //   Bottom: J    K    L
 
     static InputProfileData Keyboard() => new InputProfileData
     {
@@ -101,18 +114,18 @@ public static class DefaultMappings
 
         lane3 = new LaneButtonConfig
         {
-            topIsButton    = false, topButton    = 0, topAxis    = "", topKey    = KeyCode.J,  // top:    J
-            bottomIsButton = false, bottomButton = 0, bottomAxis = "", bottomKey = KeyCode.U   // bottom: U
+            topIsButton    = false, topButton    = 0, topAxis    = "", topKey    = KeyCode.U,  // top:    U
+            bottomIsButton = false, bottomButton = 0, bottomAxis = "", bottomKey = KeyCode.J   // bottom: J
         },
         lane4 = new LaneButtonConfig
         {
-            topIsButton    = false, topButton    = 0, topAxis    = "", topKey    = KeyCode.K,  // top:    K
-            bottomIsButton = false, bottomButton = 0, bottomAxis = "", bottomKey = KeyCode.I   // bottom: I
+            topIsButton    = false, topButton    = 0, topAxis    = "", topKey    = KeyCode.I,  // top:    I
+            bottomIsButton = false, bottomButton = 0, bottomAxis = "", bottomKey = KeyCode.K   // bottom: K
         },
         lane5 = new LaneButtonConfig
         {
-            topIsButton    = false, topButton    = 0, topAxis    = "", topKey    = KeyCode.L,  // top:    L
-            bottomIsButton = false, bottomButton = 0, bottomAxis = "", bottomKey = KeyCode.O   // bottom: O
+            topIsButton    = false, topButton    = 0, topAxis    = "", topKey    = KeyCode.O,  // top:    O
+            bottomIsButton = false, bottomButton = 0, bottomAxis = "", bottomKey = KeyCode.L   // bottom: L
         }
     };
 }
