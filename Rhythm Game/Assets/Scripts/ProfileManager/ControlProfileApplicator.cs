@@ -1,22 +1,3 @@
-// ControlProfileApplicator.cs
-// ─────────────────────────────────────────────────────────────────────────────
-// Attach this to any persistent or gameplay-scene GameObject.
-// It runs in Awake(), reads the saved ControlProfile from PlayerPrefs,
-// pulls the correct default mapping from DefaultMappings, and writes
-// every button/axis/key value into InputManager's serialized fields.
-//
-// HOW TO USE:
-//   1. Add this component to a GameObject in your gameplay scene
-//      (or on a DontDestroyOnLoad manager object if you use one).
-//   2. If InputManager is on a different GameObject, either:
-//      a) Leave inputManagerRef null → script finds it via FindObjectOfType (default)
-//      b) Drag InputManager's GameObject into inputManagerRef in the Inspector
-//   3. That's it. Every time the gameplay scene loads, the saved profile is applied.
-//
-// PLAYERPREFS KEYS USED (must match FirstRunSetupUI.cs):
-//   "input_setup_complete"  → int  1 = setup done
-//   "control_profile"       → string "FightStick" | "Gamepad" | "Keyboard"
-
 using UnityEngine;
 
 public class ControlProfileApplicator : MonoBehaviour
@@ -29,7 +10,7 @@ public class ControlProfileApplicator : MonoBehaviour
     [Tooltip("Log applied profile and field values to Console.")]
     public bool debugLog = true;
 
-    // ── PlayerPrefs keys — keep in sync with FirstRunSetupUI ─────────────────
+    // PlayerPrefs keys — keep in sync with FirstRunSetupUI
     public const string KEY_SETUP_COMPLETE = "input_setup_complete";
     public const string KEY_PROFILE        = "control_profile";
 
@@ -51,7 +32,6 @@ public class ControlProfileApplicator : MonoBehaviour
 
     void ApplySavedProfile()
     {
-        // If first-run setup hasn't been completed, default to FightStick
         // (the hero profile) so the game is still playable on first load.
         if (PlayerPrefs.GetInt(KEY_SETUP_COMPLETE, 0) == 0)
         {
@@ -76,6 +56,7 @@ public class ControlProfileApplicator : MonoBehaviour
     void ApplyProfile(ControlProfile profile)
     {
         InputProfileData data = DefaultMappings.Get(profile);
+        CustomBindingsStore.ApplyOverrides(profile, data);
         ApplyToInputManager(data);
 
         if (debugLog)
@@ -94,7 +75,7 @@ public class ControlProfileApplicator : MonoBehaviour
     {
         InputManager im = inputManagerRef;
 
-        // ── Lane 3 ────────────────────────────────────────────────────────────
+        // Lane 3
         im.lane3TopIsButton    = data.lane3.topIsButton;
         im.lane3TopButton      = data.lane3.topButton;
         im.lane3TopAxis        = data.lane3.topAxis;
@@ -105,7 +86,7 @@ public class ControlProfileApplicator : MonoBehaviour
         im.lane3BottomAxis     = data.lane3.bottomAxis;
         im.lane3BottomKey      = data.lane3.bottomKey;
 
-        // ── Lane 4 ────────────────────────────────────────────────────────────
+        // Lane 4
         im.lane4TopIsButton    = data.lane4.topIsButton;
         im.lane4TopButton      = data.lane4.topButton;
         im.lane4TopAxis        = data.lane4.topAxis;
@@ -116,7 +97,7 @@ public class ControlProfileApplicator : MonoBehaviour
         im.lane4BottomAxis     = data.lane4.bottomAxis;
         im.lane4BottomKey      = data.lane4.bottomKey;
 
-        // ── Lane 5 ────────────────────────────────────────────────────────────
+        // Lane 5
         im.lane5TopIsButton    = data.lane5.topIsButton;
         im.lane5TopButton      = data.lane5.topButton;
         im.lane5TopAxis        = data.lane5.topAxis;
@@ -128,7 +109,7 @@ public class ControlProfileApplicator : MonoBehaviour
         im.lane5BottomKey      = data.lane5.bottomKey;
     }
 
-    // ── Public utility — call this from a Settings/Controls page reset button ─
+    // Public utility — call this from a Settings/Controls page reset button
     // e.g.: FindObjectOfType<ControlProfileApplicator>().ResetToCurrentProfileDefaults();
     public void ResetToCurrentProfileDefaults()
     {

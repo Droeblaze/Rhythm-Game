@@ -1,26 +1,3 @@
-// FirstRunSetupUI.cs
-// ─────────────────────────────────────────────────────────────────────────────
-// Attach to a manager GameObject in your FirstRunSetup scene.
-// Handles device detection (display only), profile selection, saving, and
-// transitioning to the main menu after the player confirms their profile.
-//
-// ── SCENE SETUP ──────────────────────────────────────────────────────────────
-// Your FirstRunSetup scene needs:
-//   • A Canvas with:
-//       - detectedDeviceText    (TextMeshPro or Text) — shows what Unity detected
-//       - recommendationText    (TextMeshPro or Text) — "We recommend: FightStick"
-//       - fightStickButton      (Button) — profile option
-//       - gamepadButton         (Button) — profile option
-//       - keyboardButton        (Button) — profile option
-//       - continueButton        (Button) — disabled until a profile is chosen
-//   • This script on a manager GameObject, with all references wired in Inspector.
-//
-// ── DEPENDENCIES ─────────────────────────────────────────────────────────────
-//   Requires: Unity Input System package (for device detection display only)
-//   Install via Package Manager: "Input System" → com.unity.inputsystem
-//   NOTE: This does NOT replace legacy input for gameplay. It only reads
-//         connected device names to display a recommendation to the player.
-
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
@@ -32,10 +9,10 @@ using UnityEngine.InputSystem;
 
 public class FirstRunSetupUI : MonoBehaviour
 {
-    [Header("Scene to load after setup")]
-    public string mainMenuScene = "MainMenu";  // ← match your actual scene name
+    [Header("Scene")]
+    public string mainMenuScene = "MainMenu";
 
-    [Header("UI References")]
+    [Header("UI Text")]
     public TextMeshProUGUI detectedDeviceText;
     public TextMeshProUGUI recommendationText;
 
@@ -47,51 +24,50 @@ public class FirstRunSetupUI : MonoBehaviour
     [Header("Navigation")]
     public Button continueButton;
 
-    [Header("Visual Feedback — Selected Button Colors")]
-    public Color selectedColor   = new Color(1f,  0.6f, 0f);    // orange highlight
-    public Color unselectedColor = new Color(0.2f, 0.2f, 0.2f); // dark grey
+    [Header("Panels")]
+    [Tooltip("The main background/selection panel — gets hidden when customization opens. Drag BackgroundPanel here.")]
+    public GameObject profileSelectionPanel;
+    [Tooltip("Drag the CustomizationPanel GameObject here.")]
+    public BindingCustomizationPanel customizationPanel;
 
-    // ── State ─────────────────────────────────────────────────────────────────
+    [Header("Colors")]
+    public Color selectedColor   = new Color(1f, 0.6f, 0f);
+    public Color unselectedColor = new Color(0.2f, 0.2f, 0.2f);
+
     private ControlProfile? selectedProfile = null;
 
     void Start()
     {
-        // Continue is disabled until player explicitly picks a profile
-        continueButton.interactable = false;
-
-        // Wire buttons
-        fightStickButton.onClick.AddListener(() => SelectProfile(ControlProfile.FightStick));
-        gamepadButton.onClick.AddListener(   () => SelectProfile(ControlProfile.Gamepad));
-        keyboardButton.onClick.AddListener(  () => SelectProfile(ControlProfile.Keyboard));
+        // Wire profile buttons — each one selects AND opens customization
+        fightStickButton.onClick.AddListener(() => SelectAndOpen(ControlProfile.FightStick));
+        gamepadButton.onClick.AddListener(   () => SelectAndOpen(ControlProfile.Gamepad));
+        keyboardButton.onClick.AddListener(  () => SelectAndOpen(ControlProfile.Keyboard));
         continueButton.onClick.AddListener(OnContinue);
 
-        // Detect device and auto-recommend
+        // Make sure customization panel is hidden on start (belt + suspenders alongside Awake)
+        if (customizationPanel != null)
+            customizationPanel.gameObject.SetActive(false);
+
         DetectAndRecommend();
 
-        // Reset all button colors
-        SetButtonColor(fightStickButton, unselectedColor);
-        SetButtonColor(gamepadButton,    unselectedColor);
-        SetButtonColor(keyboardButton,   unselectedColor);
+        // Pre-select previously saved profile if one exists
+        string saved = PlayerPrefs.GetString(ControlProfileApplicator.KEY_PROFILE, "");
+        if (!string.IsNullOrEmpty(saved) && System.Enum.TryParse(saved, out ControlProfile existing))
+            SelectProfile(existing); // highlight only, don't open panel on load
     }
 
-    // ── Device Detection (display + recommendation only) ──────────────────────
+    // Device detection
 
     void DetectAndRecommend()
     {
-        ControlProfile recommended = ControlProfile.FightStick; // default: hero profile
-        string         deviceName  = "No device detected";
+        ControlProfile recommended = ControlProfile.FightStick;
+        string deviceName = "No device detected";
 
 #if UNITY_INPUT_SYSTEM_AVAILABLE
-        // Use new Input System ONLY for reading device names — not for gameplay
         var gamepads = Gamepad.all;
         if (gamepads.Count > 0)
         {
-            deviceName = gamepads[0].displayName ?? gamepads[0].name;
-
-            // Note: A fight stick may appear as a generic HID or Xbox controller.
-            // We do NOT auto-select FightStick from this alone — we only recommend.
-            // The player must confirm. FightStick is always the default recommendation
-            // because it is the primary design target of this game.
+            deviceName  = gamepads[0].displayName ?? gamepads[0].name;
             recommended = ControlProfile.FightStick;
         }
         else if (Keyboard.current != null)
@@ -100,8 +76,6 @@ public class FirstRunSetupUI : MonoBehaviour
             recommended = ControlProfile.Keyboard;
         }
 #else
-        // Fallback if Input System package isn't installed:
-        // Check Unity's legacy joystick detection
         string[] joysticks = Input.GetJoystickNames();
         if (joysticks.Length > 0 && !string.IsNullOrEmpty(joysticks[0]))
         {
@@ -115,27 +89,22 @@ public class FirstRunSetupUI : MonoBehaviour
         }
 #endif
 
-        // Update UI
         if (detectedDeviceText != null)
             detectedDeviceText.text = $"Detected: {deviceName}";
 
         if (recommendationText != null)
             recommendationText.text = $"Recommended: {ProfileDisplayName(recommended)}\n" +
-                                       "<size=70%>(You may choose any profile below)</size>";
+                                       "<size=70%>(Tap a profile to customize its bindings)</size>";
 
-        // Pre-highlight recommended button but do NOT auto-select —
-        // the player must press Continue themselves after confirming.
         HighlightRecommended(recommended);
     }
 
     void HighlightRecommended(ControlProfile recommended)
     {
-        // Dim all, then gently highlight the recommended one
         SetButtonColor(fightStickButton, unselectedColor);
         SetButtonColor(gamepadButton,    unselectedColor);
         SetButtonColor(keyboardButton,   unselectedColor);
 
-        // Use a lighter highlight for "recommended" vs full orange for "selected"
         Color recommendedColor = Color.Lerp(unselectedColor, selectedColor, 0.35f);
         switch (recommended)
         {
@@ -145,45 +114,77 @@ public class FirstRunSetupUI : MonoBehaviour
         }
     }
 
-    // ── Profile Selection ─────────────────────────────────────────────────────
+    // Profile selection (highlight only, no panel open)
 
     void SelectProfile(ControlProfile profile)
     {
         selectedProfile = profile;
-
-        // Highlight selected, dim others
         SetButtonColor(fightStickButton, profile == ControlProfile.FightStick ? selectedColor : unselectedColor);
         SetButtonColor(gamepadButton,    profile == ControlProfile.Gamepad    ? selectedColor : unselectedColor);
         SetButtonColor(keyboardButton,   profile == ControlProfile.Keyboard   ? selectedColor : unselectedColor);
-
-        continueButton.interactable = true;
-
-        Debug.Log($"[FirstRunSetup] Profile selected: {profile}");
     }
 
-    // ── Continue / Save ───────────────────────────────────────────────────────
+    // Select + open customization
+
+    void SelectAndOpen(ControlProfile profile)
+    {
+        SelectProfile(profile);
+        SaveProfile(profile); // save immediately so customization knows what profile we're on
+
+        if (customizationPanel == null) return;
+
+        if (profileSelectionPanel != null)
+            profileSelectionPanel.SetActive(false);
+
+        customizationPanel.gameObject.SetActive(true);
+        customizationPanel.Open(profile, this);
+    }
+
+    // Called by BindingCustomizationPanel Back button
+
+    public void ShowProfileSelection()
+    {
+        if (profileSelectionPanel != null)
+            profileSelectionPanel.SetActive(true);
+
+        if (customizationPanel != null)
+            customizationPanel.gameObject.SetActive(false);
+    }
+
+    // Continue
 
     void OnContinue()
     {
-        if (selectedProfile == null)
-        {
-            Debug.LogWarning("[FirstRunSetup] Continue pressed with no profile selected — this shouldn't happen.");
-            return;
-        }
+        if (selectedProfile != null)
+            SaveProfile(selectedProfile.Value);
 
-        SaveProfile(selectedProfile.Value);
         SceneManager.LoadScene(mainMenuScene);
     }
+    // Default
+    public void ResetDefaults()
+{
+    string saved = PlayerPrefs.GetString(ControlProfileApplicator.KEY_PROFILE, "FightStick");
+
+    if (System.Enum.TryParse(saved, out ControlProfile profile))
+    {
+        CustomBindingsStore.ClearOverrides(profile);
+        Debug.Log($"[ControllerConfig] Reset overrides for: {profile}");
+    }
+    else
+    {
+        Debug.LogWarning("[ControllerConfig] Failed to parse profile during reset.");
+    }
+}
 
     public static void SaveProfile(ControlProfile profile)
     {
         PlayerPrefs.SetString(ControlProfileApplicator.KEY_PROFILE, profile.ToString());
         PlayerPrefs.SetInt(ControlProfileApplicator.KEY_SETUP_COMPLETE, 1);
         PlayerPrefs.Save();
-        Debug.Log($"[FirstRunSetup] Saved profile: {profile}");
+        Debug.Log($"[ControllerConfig] Saved profile: {profile}");
     }
 
-    // ── Helpers ───────────────────────────────────────────────────────────────
+    // Helpers
 
     void SetButtonColor(Button btn, Color color)
     {

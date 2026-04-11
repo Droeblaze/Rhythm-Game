@@ -2,7 +2,7 @@
 // This is the ONLY place where button numbers, axis names, and key codes are defined.
 // To change any default binding, edit ONLY this file.
 //
-// ── FIGHT STICK (PRIMARY / hero profile) ──────────────────────────────────────
+// FIGHT STICK (PRIMARY / hero profile)
 //   Uses the button numbers already configured in InputManager's serialized defaults.
 //   Lane 3: JoystickButton8  (top) / JoystickButton9  (bottom)
 //   Lane 4: JoystickButton10 (top) / JoystickButton11 (bottom)
@@ -11,13 +11,13 @@
 //   2-button chord (top + bottom same lane):  handled by ButtonRow.Both in InputManager ✓
 //   4-button chord (two full lanes at once):  requires cross-lane detection — see TODO below
 //
-// ── GAMEPAD (fallback) ────────────────────────────────────────────────────────
+// GAMEPAD (fallback)
 //   Standard Xbox/PS face button layout.
 //   Lane 3: A/Cross (0) top    / X/Square  (2) bottom
 //   Lane 4: B/Circle (1) top   / Y/Triangle(3) bottom
 //   Lane 5: LB/L1   (4) top   / RightTrigger axis bottom
 //
-// ── KEYBOARD (fallback) ───────────────────────────────────────────────────────
+// KEYBOARD (fallback)
 //   Lanes 0-2: arrow keys / WASD drive Horizontal+Vertical axes — no config needed.
 //   Lanes 3-5 layout (vertical pairs, top row is higher on keyboard):
 //
@@ -25,23 +25,14 @@
 //   Top row:   U      I      O      ← upper keys (physically higher)
 //   Bot row:   J      K      L      ← lower keys (physically lower)
 //
-//   2-button chord: hold both U+J, I+K, or O+L simultaneously → ButtonRow.Both ✓
+//   2-button chord: hold both U+J, I+K, or O+L simultaneously → ButtonRow.Both
 //   4-button chord: requires cross-lane detection — see TODO below
-//
-// ── TODO: 4-BUTTON CHORD SUPPORT ─────────────────────────────────────────────
-//   When a note requires pressing two full lanes simultaneously (e.g. all of
-//   lane 3 AND lane 4 at once), InputManager's current per-lane CheckLaneButtons
-//   loop cannot detect this. A cross-lane chord detection pass will need to be
-//   added to InputManager before 4-button chord notes can be charted.
-//   This file will not need changes for that — the button/key definitions here
-//   are already correct. Only InputManager's CheckButtonInputs needs a new
-//   multi-lane simultaneous check added to it.
 
 using UnityEngine;
 
 public static class DefaultMappings
 {
-    // ── Public entry point ────────────────────────────────────────────────────
+    // Public entry point
 
     public static InputProfileData Get(ControlProfile profile)
     {
@@ -54,8 +45,7 @@ public static class DefaultMappings
         }
     }
 
-    // ── FightStick ─────────────────────────────────────────────────────────────
-
+    // FightStick 
     static InputProfileData FightStick() => new InputProfileData
     {
         profile = ControlProfile.FightStick,
@@ -77,7 +67,7 @@ public static class DefaultMappings
         }
     };
 
-    // ── Gamepad ─────────────────────────────────────────────────────────────────
+    // Gamepad
 
     static InputProfileData Gamepad() => new InputProfileData
     {
@@ -100,7 +90,7 @@ public static class DefaultMappings
         }
     };
 
-    // ── Keyboard ────────────────────────────────────────────────────────────────
+    // Keyboard
     // Keys arranged as vertical pairs matching the fight stick's top/bottom layout.
     // Top row = physically higher keys, Bottom row = physically lower keys.
     //
