@@ -20,13 +20,14 @@ public class NoteSpawner : MonoBehaviour
     [Tooltip("Positive values delay audio (notes come earlier), negative values advance audio (notes come later). Measured in seconds.")]
     public float audioOffset = 0f;
 
-    [Header("Chart Data")]
+    [Header("Song & Chart Data")]
+    public SongContainer songContainer;
     public ChartData chartData;
-    public bool loadFromSelection = true; // NEW: Toggle to load from selection
+    public bool loadFromSelection = true;
 
     [Header("Scene Transition")]
     public string resultsSceneName = "Results";
-    public float delayAfterSongEnd = 2f; // Delay before transitioning to results
+    public float delayAfterSongEnd = 2f;
 
     private AudioSource audioSource;
     private float songTime = 0f;
@@ -44,14 +45,26 @@ public class NoteSpawner : MonoBehaviour
         scrollSpeed = SettingsManager.GetScrollSpeed();
         audioOffset = SettingsManager.GetAudioOffset();
 
-        // NEW: Load selected chart if enabled
+        // Load selected song and chart if enabled
         if (loadFromSelection)
         {
+            SongContainer selectedSong = ChartSelectionManager.LoadSelectedSong();
             ChartData selectedChart = ChartSelectionManager.LoadSelectedChart();
+
+            if (selectedSong != null)
+            {
+                songContainer = selectedSong;
+            }
             if (selectedChart != null)
             {
                 chartData = selectedChart;
             }
+        }
+
+        if (songContainer == null)
+        {
+            Debug.LogError("No song container loaded!");
+            return;
         }
 
         if (chartData == null || chartData.notes.Count == 0)
@@ -65,10 +78,10 @@ public class NoteSpawner : MonoBehaviour
             inputManager = FindObjectOfType<InputManager>();
         }
 
-        // Load and prepare the audio clip
-        if (chartData.songAudio != null)
+        // Load and prepare the audio clip from the SongContainer
+        if (songContainer.songAudio != null)
         {
-            audioSource.clip = chartData.songAudio;
+            audioSource.clip = songContainer.songAudio;
             audioSource.playOnAwake = false;
 
             // Pre-load audio by playing and immediately stopping
@@ -77,7 +90,7 @@ public class NoteSpawner : MonoBehaviour
         }
         else
         {
-            Debug.LogError("No audio clip assigned in ChartData!");
+            Debug.LogError("No audio clip assigned in SongContainer!");
         }
 
         // Sort notes by timestamp
@@ -228,7 +241,7 @@ public class NoteSpawner : MonoBehaviour
                 {
                     noteVisual.MarkAsMiss();
                 }
-                // Don't RemoveAt here for hold notes – MarkAsMiss sets holdFinished
+                // Don't RemoveAt here for hold notes — MarkAsMiss sets holdFinished
                 // and the holdFinished branch above will handle cleanup after scrolling off.
                 if (noteVisual == null || !noteVisual.holdFinished)
                 {

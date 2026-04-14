@@ -5,6 +5,7 @@ using System.Linq;
 
 public class ChartEditor : EditorWindow
 {
+    private SongContainer currentSong;
     private ChartData currentChart;
     private AudioClip audioClip;
     private AudioSource previewAudioSource;
@@ -206,22 +207,82 @@ public class ChartEditor : EditorWindow
 
         toolsPanelScroll = EditorGUILayout.BeginScrollView(toolsPanelScroll, GUILayout.Width(toolsPanelWidth), GUILayout.Height(position.height));
 
-        // Chart selection
-        EditorGUILayout.LabelField("Chart", EditorStyles.boldLabel);
-        ChartData newChart = (ChartData)EditorGUILayout.ObjectField(currentChart, typeof(ChartData), false);
-        if (newChart != currentChart)
+        // Song Container selection
+        EditorGUILayout.LabelField("Song", EditorStyles.boldLabel);
+        SongContainer newSong = (SongContainer)EditorGUILayout.ObjectField("Song Container", currentSong, typeof(SongContainer), false);
+        if (newSong != currentSong)
         {
-            currentChart = newChart;
-            if (currentChart != null && currentChart.songAudio != null)
+            currentSong = newSong;
+            if (currentSong != null && currentSong.songAudio != null)
             {
-                audioClip = currentChart.songAudio;
+                audioClip = currentSong.songAudio;
                 previewAudioSource.clip = audioClip;
             }
+            else
+            {
+                audioClip = null;
+            }
+            // Clear chart when song changes
+            currentChart = null;
+        }
+
+        if (currentSong == null)
+        {
+            EditorGUILayout.HelpBox("Select or create a Song Container asset to begin.", MessageType.Info);
+            if (GUILayout.Button("Create New Song Container"))
+            {
+                CreateNewSongContainer();
+            }
+            EditorGUILayout.EndScrollView();
+            EditorGUILayout.EndVertical();
+            return;
+        }
+
+        // Display song info (read-only)
+        EditorGUI.BeginDisabledGroup(true);
+        EditorGUILayout.TextField("Title", currentSong.title);
+        EditorGUILayout.TextField("Artist", currentSong.artist);
+        EditorGUI.EndDisabledGroup();
+
+        EditorGUILayout.Space(4);
+
+        // Chart selection from the SongContainer's charts array
+        EditorGUILayout.LabelField("Chart", EditorStyles.boldLabel);
+        if (currentSong.charts != null && currentSong.charts.Length > 0)
+        {
+            // Build dropdown labels from chart names
+            string[] chartLabels = new string[currentSong.charts.Length];
+            for (int i = 0; i < currentSong.charts.Length; i++)
+            {
+                if (currentSong.charts[i] != null)
+                    chartLabels[i] = $"{currentSong.charts[i].name} (? {currentSong.charts[i].difficulty:F1})";
+                else
+                    chartLabels[i] = $"[{i}] (null)";
+            }
+
+            int currentChartIndex = System.Array.IndexOf(currentSong.charts, currentChart);
+            if (currentChartIndex < 0) currentChartIndex = 0;
+
+            int selectedChartIndex = EditorGUILayout.Popup("Difficulty", currentChartIndex, chartLabels);
+            if (currentSong.charts[selectedChartIndex] != null)
+            {
+                currentChart = currentSong.charts[selectedChartIndex];
+            }
+        }
+        else
+        {
+            EditorGUILayout.HelpBox("No charts assigned to this Song Container. Add ChartData assets to the charts array in the Inspector.", MessageType.Warning);
+        }
+
+        // Also allow direct chart assignment for flexibility
+        ChartData directChart = (ChartData)EditorGUILayout.ObjectField("Or drag chart", currentChart, typeof(ChartData), false);
+        if (directChart != currentChart && directChart != null)
+        {
+            currentChart = directChart;
         }
 
         if (currentChart == null)
         {
-            EditorGUILayout.HelpBox("Select or create a ChartData asset to begin editing.", MessageType.Info);
             if (GUILayout.Button("Create New Chart"))
             {
                 CreateNewChart();
@@ -302,11 +363,11 @@ public class ChartEditor : EditorWindow
             SeekTo(scrubTime);
         }
 
-        // Beat position display
-        if (currentChart.bpm > 0)
+        // Beat position display — BPM now comes from SongContainer
+        if (currentSong.bpm > 0)
         {
-            float currentBeat = currentChart.TimeToBeat((float)songTime);
-            float activeBpm = currentChart.GetBpmAtTime((float)songTime);
+            float currentBeat = currentSong.TimeToBeat((float)songTime);
+            float activeBpm = currentSong.GetBpmAtTime((float)songTime);
             int measure = Mathf.FloorToInt(currentBeat / 4f) + 1;
             float beatInMeasure = (currentBeat % 4f) + 1f;
             EditorGUILayout.LabelField(
@@ -398,7 +459,7 @@ public class ChartEditor : EditorWindow
 
         EditorGUILayout.Space(6);
 
-        // --- BPM Changes ---
+        // --- BPM Changes (now edits SongContainer) ---
         showBpmChanges = EditorGUILayout.Foldout(showBpmChanges, "BPM Changes", true, EditorStyles.foldoutHeader);
         if (showBpmChanges)
         {
@@ -412,7 +473,7 @@ public class ChartEditor : EditorWindow
     void DrawBpmChangesPanel()
     {
         EditorGUILayout.HelpBox(
-            $"Base BPM: {currentChart.bpm}. Add tempo changes below. " +
+            $"Base BPM: {currentSong.bpm}. Add tempo changes below. " +
             "Each entry overrides the BPM from that timestamp onward.",
             MessageType.Info);
 
@@ -429,14 +490,14 @@ public class ChartEditor : EditorWindow
         {
             if (newBpmChangeValue > 0f && newBpmChangeTime > 0f)
             {
-                Undo.RecordObject(currentChart, "Add BPM Change");
-                currentChart.bpmChanges.Add(new BpmChangeData
+                Undo.RecordObject(currentSong, "Add BPM Change");
+                currentSong.bpmChanges.Add(new BpmChangeData
                 {
                     timestamp = newBpmChangeTime,
                     bpm = newBpmChangeValue
                 });
-                currentChart.SortBpmChanges();
-                EditorUtility.SetDirty(currentChart);
+                currentSong.SortBpmChanges();
+                EditorUtility.SetDirty(currentSong);
             }
         }
 
@@ -444,25 +505,25 @@ public class ChartEditor : EditorWindow
         {
             if (newBpmChangeValue > 0f)
             {
-                Undo.RecordObject(currentChart, "Add BPM Change at Playhead");
-                currentChart.bpmChanges.Add(new BpmChangeData
+                Undo.RecordObject(currentSong, "Add BPM Change at Playhead");
+                currentSong.bpmChanges.Add(new BpmChangeData
                 {
                     timestamp = (float)songTime,
                     bpm = newBpmChangeValue
                 });
-                currentChart.SortBpmChanges();
-                EditorUtility.SetDirty(currentChart);
+                currentSong.SortBpmChanges();
+                EditorUtility.SetDirty(currentSong);
             }
         }
         EditorGUILayout.EndHorizontal();
 
         // List existing BPM changes
-        if (currentChart.bpmChanges.Count > 0)
+        if (currentSong.bpmChanges.Count > 0)
         {
             bpmScrollPosition = EditorGUILayout.BeginScrollView(bpmScrollPosition, GUILayout.MaxHeight(120));
-            for (int i = 0; i < currentChart.bpmChanges.Count; i++)
+            for (int i = 0; i < currentSong.bpmChanges.Count; i++)
             {
-                BpmChangeData change = currentChart.bpmChanges[i];
+                BpmChangeData change = currentSong.bpmChanges[i];
                 EditorGUILayout.BeginHorizontal();
 
                 // Editable fields
@@ -471,11 +532,11 @@ public class ChartEditor : EditorWindow
                 float editedBpm = EditorGUILayout.FloatField(change.bpm, GUILayout.Width(60));
                 if (EditorGUI.EndChangeCheck())
                 {
-                    Undo.RecordObject(currentChart, "Edit BPM Change");
+                    Undo.RecordObject(currentSong, "Edit BPM Change");
                     change.timestamp = editedTime;
                     change.bpm = editedBpm;
-                    currentChart.SortBpmChanges();
-                    EditorUtility.SetDirty(currentChart);
+                    currentSong.SortBpmChanges();
+                    EditorUtility.SetDirty(currentSong);
                 }
 
                 // Seek to this BPM change
@@ -488,9 +549,9 @@ public class ChartEditor : EditorWindow
                 // Remove this BPM change
                 if (GUILayout.Button("X", GUILayout.Width(25)))
                 {
-                    Undo.RecordObject(currentChart, "Remove BPM Change");
-                    currentChart.bpmChanges.RemoveAt(i);
-                    EditorUtility.SetDirty(currentChart);
+                    Undo.RecordObject(currentSong, "Remove BPM Change");
+                    currentSong.bpmChanges.RemoveAt(i);
+                    EditorUtility.SetDirty(currentSong);
                     i--;
                 }
 
@@ -506,7 +567,7 @@ public class ChartEditor : EditorWindow
 
     void DrawTimeline()
     {
-        if (currentChart == null) return;
+        if (currentSong == null || currentChart == null) return;
 
         // The timeline fills the remaining width to the right of the tools panel
         float timelineX = toolsPanelWidth + 2;
@@ -535,7 +596,7 @@ public class ChartEditor : EditorWindow
     float GetTimelineLength()
     {
         if (audioClip == null) return 1000f;
-        float totalBeats = currentChart.TimeToBeat(audioClip.length);
+        float totalBeats = currentSong.TimeToBeat(audioClip.length);
         return totalBeats * beatHeight * zoom;
     }
 
@@ -559,10 +620,10 @@ public class ChartEditor : EditorWindow
 
     void DrawGridLines()
     {
-        if (currentChart.bpm <= 0) return;
+        if (currentSong.bpm <= 0) return;
 
         float totalTime = audioClip != null ? audioClip.length : 60f;
-        float totalBeats = currentChart.TimeToBeat(totalTime);
+        float totalBeats = currentSong.TimeToBeat(totalTime);
 
         // Determine visible Y range to only draw visible grid lines
         float visibleTop = scrollPosition.y;
@@ -634,11 +695,11 @@ public class ChartEditor : EditorWindow
 
     void DrawBpmChangeMarkers()
     {
-        if (currentChart.bpmChanges == null) return;
+        if (currentSong.bpmChanges == null) return;
 
-        for (int i = 0; i < currentChart.bpmChanges.Count; i++)
+        for (int i = 0; i < currentSong.bpmChanges.Count; i++)
         {
-            BpmChangeData change = currentChart.bpmChanges[i];
+            BpmChangeData change = currentSong.bpmChanges[i];
             float y = TimeToY(change.timestamp);
 
             // Draw a bright orange line across all lanes
@@ -661,20 +722,20 @@ public class ChartEditor : EditorWindow
     {
         var segments = new List<(float start, float end, float bpm)>();
         float prevTime = 0f;
-        float currentBpm = currentChart.bpm;
+        float currentBpm = currentSong.bpm;
 
-        if (currentChart.bpmChanges != null)
+        if (currentSong.bpmChanges != null)
         {
-            for (int i = 0; i < currentChart.bpmChanges.Count; i++)
+            for (int i = 0; i < currentSong.bpmChanges.Count; i++)
             {
-                float changeTime = currentChart.bpmChanges[i].timestamp;
+                float changeTime = currentSong.bpmChanges[i].timestamp;
                 if (changeTime > totalTime) break;
                 if (changeTime > prevTime)
                 {
                     segments.Add((prevTime, changeTime, currentBpm));
                 }
                 prevTime = changeTime;
-                currentBpm = currentChart.bpmChanges[i].bpm;
+                currentBpm = currentSong.bpmChanges[i].bpm;
             }
         }
 
@@ -783,16 +844,16 @@ public class ChartEditor : EditorWindow
 
     float TimeToY(float time)
     {
-        if (currentChart == null || currentChart.bpm <= 0) return 0;
-        float beats = currentChart.TimeToBeat(time);
+        if (currentSong == null || currentSong.bpm <= 0) return 0;
+        float beats = currentSong.TimeToBeat(time);
         return beats * beatHeight * zoom;
     }
 
     float YToTime(float y)
     {
-        if (currentChart == null || currentChart.bpm <= 0) return 0;
+        if (currentSong == null || currentSong.bpm <= 0) return 0;
         float beats = y / (beatHeight * zoom);
-        return currentChart.BeatToTime(beats);
+        return currentSong.BeatToTime(beats);
     }
 
     /// <summary>
@@ -802,10 +863,10 @@ public class ChartEditor : EditorWindow
     /// </summary>
     float SnapTimeToGrid(float time)
     {
-        float beat = currentChart.TimeToBeat(time);
+        float beat = currentSong.TimeToBeat(time);
         float subdivisionSize = 1f / beatDivision;
         float snappedBeat = Mathf.Round(beat / subdivisionSize) * subdivisionSize;
-        return currentChart.BeatToTime(snappedBeat);
+        return currentSong.BeatToTime(snappedBeat);
     }
 
     void SeekTo(float time)
@@ -824,9 +885,9 @@ public class ChartEditor : EditorWindow
 
     void SeekByBeats(int beats)
     {
-        if (currentChart == null || currentChart.bpm <= 0) return;
+        if (currentSong == null || currentSong.bpm <= 0) return;
         // Use the BPM at the current time for seeking
-        float activeBpm = currentChart.GetBpmAtTime((float)songTime);
+        float activeBpm = currentSong.GetBpmAtTime((float)songTime);
         float secondsPerBeat = 60f / activeBpm;
         SeekTo((float)songTime + beats * secondsPerBeat);
     }
@@ -1211,13 +1272,25 @@ public class ChartEditor : EditorWindow
         }
     }
 
+    void CreateNewSongContainer()
+    {
+        string path = EditorUtility.SaveFilePanelInProject("Create New Song Container", "NewSong", "asset", "Create a new song container file");
+        if (!string.IsNullOrEmpty(path))
+        {
+            SongContainer newSong = CreateInstance<SongContainer>();
+            newSong.bpm = 120f;
+            AssetDatabase.CreateAsset(newSong, path);
+            AssetDatabase.SaveAssets();
+            currentSong = newSong;
+        }
+    }
+
     void CreateNewChart()
     {
         string path = EditorUtility.SaveFilePanelInProject("Create New Chart", "NewChart", "asset", "Create a new chart data file");
         if (!string.IsNullOrEmpty(path))
         {
             ChartData newChart = CreateInstance<ChartData>();
-            newChart.bpm = 120f;
             AssetDatabase.CreateAsset(newChart, path);
             AssetDatabase.SaveAssets();
             currentChart = newChart;

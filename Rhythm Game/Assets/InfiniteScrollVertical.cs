@@ -75,20 +75,6 @@ public class InfiniteScrollVertical : MonoBehaviour
         }
 
 
-        /*
-        //Loop scroll view
-        if (contentPanelTransform.localPosition.y > 0)
-        {
-            Canvas.ForceUpdateCanvases();
-            contentPanelTransform.localPosition -= new Vector3(0, ItemList.Length * (ItemList[0].rect.height + VLG.spacing), 0);
-        }
-
-        if (contentPanelTransform.localPosition.y < 0 - (ItemList.Length * (ItemList[0].rect.height + VLG.spacing)))
-        {
-            Canvas.ForceUpdateCanvases();
-            contentPanelTransform.localPosition += new Vector3(0, ItemList.Length * (ItemList[0].rect.height + VLG.spacing), 0);
-        }
-        */
         
     }
 }

@@ -4,7 +4,6 @@ public class MenuInputHandler : MonoBehaviour
 {
     [Header("References")]
     public SnapScrollRect snapScrollRect;
-    public ChartSelectionManager selectionManager;
 
     [Header("Input Settings")]
     public float stickDeadzone = 0.5f;
@@ -41,28 +40,33 @@ public class MenuInputHandler : MonoBehaviour
 
     void CheckSelectInput()
     {
-        if (snapScrollRect == null || selectionManager == null) return;
+        if (snapScrollRect == null) return;
         if (InputBindingManager.Instance == null) return;
 
-        // Use Button 1 (Lane3 Top) as the select/confirm button
         bool selectPressed = InputBindingManager.Instance.GetBindingDown(
             InputBindingManager.Instance.Bindings.button1);
 
         if (selectPressed)
         {
-            SelectCurrentChart();
+            SelectCurrentItem();
         }
     }
 
-    void SelectCurrentChart()
+    void SelectCurrentItem()
     {
-        Transform currentChild = snapScrollRect.contentRect.GetChild(snapScrollRect.GetCurrentIndex());
+        if (snapScrollRect.contentRect == null) return;
+
+        int index = snapScrollRect.GetCurrentIndex();
+        if (index < 0 || index >= snapScrollRect.contentRect.childCount) return;
+
+        Transform currentChild = snapScrollRect.contentRect.GetChild(index);
         if (currentChild == null) return;
 
-        ChartListItem listItem = currentChild.GetComponent<ChartListItem>();
-        if (listItem != null && listItem.selectButton != null)
+        // Try to invoke a Button on the current item
+        UnityEngine.UI.Button button = currentChild.GetComponentInChildren<UnityEngine.UI.Button>();
+        if (button != null)
         {
-            listItem.selectButton.onClick.Invoke();
+            button.onClick.Invoke();
         }
     }
 }

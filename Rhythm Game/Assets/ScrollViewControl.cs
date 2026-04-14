@@ -9,7 +9,7 @@ public class ScrollViewControl : MonoBehaviour
 
     public RectTransform contentPanelTransform;
     public VerticalLayoutGroup VLG;
-    public RectTransform[] ItemList;
+    public Button[] ItemList;
 
     private int currentIndex = 0;
 
@@ -26,10 +26,13 @@ public class ScrollViewControl : MonoBehaviour
 
     public float scrollStep;
 
+    public bool inputLocked = false;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        itemHeight = ItemList[0].rect.height + VLG.spacing;
+        RectTransform rt = ItemList[0].GetComponent<RectTransform>();
+        itemHeight = rt.rect.height + VLG.spacing;
 
         float viewportHeight = scrollView.viewport.rect.height;
         topDuplicateCount = Mathf.CeilToInt(viewportHeight / itemHeight);
@@ -42,6 +45,9 @@ public class ScrollViewControl : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (inputLocked)
+            return;
+
         //Check for input
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
@@ -144,14 +150,14 @@ public class ScrollViewControl : MonoBehaviour
 
     void SelectItem()
     {
-        Debug.Log("Selecte index " + currentIndex);
+        Debug.Log("Selected index " + currentIndex);
 
-        /*
+
         Button btn = ItemList[currentIndex].GetComponent<Button>();
         if (btn != null)
         {
             btn.onClick.Invoke();
         }
-        */
+
     }
 }
