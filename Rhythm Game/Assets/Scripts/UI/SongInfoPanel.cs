@@ -15,6 +15,12 @@ public class SongInfoPanel : MonoBehaviour
     public TextMeshProUGUI durationText;
     public Image songArtImage;
 
+    [Header("Background Art")]
+    [Tooltip("A second image placed behind the panel, showing the same album art zoomed in.")]
+    public Image backgroundArtImage;
+    [Tooltip("Scale multiplier for the zoomed-in background image.")]
+    public float backgroundZoomScale = 1.5f;
+
     [Header("Difficulty List")]
     public Transform difficultyListContainer;
     public GameObject difficultyLabelPrefab; // Simple text prefab (no button, just a label)
@@ -72,6 +78,24 @@ public class SongInfoPanel : MonoBehaviour
             }
         }
 
+        // Background art (zoomed-in copy of album art)
+        if (backgroundArtImage != null)
+        {
+            backgroundArtImage.preserveAspect = true;
+            if (song.songArt != null)
+            {
+                backgroundArtImage.sprite = song.songArt;
+                backgroundArtImage.color = new Color(0.5f, 0.5f, 0.5f);
+                backgroundArtImage.rectTransform.localScale = Vector3.one * backgroundZoomScale;
+            }
+            else
+            {
+                backgroundArtImage.sprite = null;
+                backgroundArtImage.color = new Color(0.2f, 0.2f, 0.2f);
+                backgroundArtImage.rectTransform.localScale = Vector3.one * backgroundZoomScale;
+            }
+        }
+
         // Difficulty list (display only — not selectable here)
         PopulateDifficultyList(song);
     }
@@ -97,7 +121,7 @@ public class SongInfoPanel : MonoBehaviour
             TextMeshProUGUI label = labelObj.GetComponentInChildren<TextMeshProUGUI>();
             if (label != null)
             {
-                label.text = $"? {chart.difficulty:F1}  —  {chart.name}";
+                label.text = $"{chart.difficulty:F1}";
             }
         }
     }
@@ -112,6 +136,12 @@ public class SongInfoPanel : MonoBehaviour
         {
             songArtImage.sprite = null;
             songArtImage.color = new Color(0.2f, 0.2f, 0.2f);
+        }
+
+        if (backgroundArtImage != null)
+        {
+            backgroundArtImage.sprite = null;
+            backgroundArtImage.color = new Color(0.2f, 0.2f, 0.2f);
         }
 
         if (difficultyListContainer != null)

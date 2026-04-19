@@ -86,7 +86,7 @@ public class DifficultyPanel : MonoBehaviour
             GameObject btnObj = Instantiate(difficultyButtonPrefab, buttonContainer);
             TextMeshProUGUI btnText = btnObj.GetComponentInChildren<TextMeshProUGUI>();
             if (btnText != null)
-                btnText.text = $"? {chart.difficulty:F1}  —  {chart.name}";
+                btnText.text = $"{chart.difficulty:F1}";
 
             Button btn = btnObj.GetComponent<Button>();
             int captured = currentCharts.Count - 1;
