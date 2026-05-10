@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 018f60730b9877b4083c6f451ae76f17, type: 3}
   m_Name: You Spin Me Right Round
   m_EditorClassIdentifier: Assembly-CSharp::ChartData
-  songAudio: {fileID: 8300000, guid: 00c27d2c562d9f6459d0e3f6de998e75, type: 3}
-  bpm: 128
+  difficulty: 5.9530663
   notes:
   - timestamp: 0
     noteType: 0
@@ -543,5 +542,3 @@ MonoBehaviour:
     stickDirection: 1
     buttonRow: 0
     holdDuration: 0
-  bpmChanges: []
-  difficulty: 0

@@ -58,6 +58,8 @@ public class DifficultyCalculator
         float durationMultiplier = Mathf.Pow(DURATION_MULTIPLIER_PER_MINUTE, durationMinutes);
         float finalDifficulty = averageDifficulty * durationMultiplier;
 
+        finalDifficulty = Mathf.Pow(finalDifficulty, 1.05f) + 1f;
+
         return finalDifficulty;
     }
 

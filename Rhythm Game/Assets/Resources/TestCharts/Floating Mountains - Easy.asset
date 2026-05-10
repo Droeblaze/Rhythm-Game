@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 018f60730b9877b4083c6f451ae76f17, type: 3}
   m_Name: Floating Mountains - Easy
   m_EditorClassIdentifier: Assembly-CSharp::ChartData
-  songAudio: {fileID: 8300000, guid: 0d2e81fb68927284db90a3482ba5845a, type: 3}
-  bpm: 120
+  difficulty: 2.9121358
   notes:
   - timestamp: 0
     noteType: 0
@@ -429,5 +428,3 @@ MonoBehaviour:
     stickDirection: 0
     buttonRow: 0
     holdDuration: 0
-  bpmChanges: []
-  difficulty: 2.9121358

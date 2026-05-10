@@ -109,6 +109,12 @@ public class SettingsManager : MonoBehaviour
         UpdateUI();
     }
 
+    public void GoToMainMenu()
+    {
+        SaveSettings();
+        SceneManager.LoadScene("MainMenu");
+    }
+
     public void OpenControls()
     {
         SceneManager.LoadScene("Controls");

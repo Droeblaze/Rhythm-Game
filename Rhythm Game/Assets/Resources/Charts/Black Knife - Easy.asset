@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 018f60730b9877b4083c6f451ae76f17, type: 3}
   m_Name: Black Knife - Easy
   m_EditorClassIdentifier: Assembly-CSharp::ChartData
-  songAudio: {fileID: 8300000, guid: a4f33bfab570e3e4aa91b3327ab213ba, type: 3}
-  bpm: 147.5
+  difficulty: 2.4815397
   notes:
   - timestamp: 0
     noteType: 0
@@ -100,17 +99,17 @@ MonoBehaviour:
     buttonRow: 1
     holdDuration: 0
   - timestamp: 9.762712
-    noteType: 1
-    laneIndex: 5
-    stickDirection: 1
-    buttonRow: 0
-    holdDuration: 1.5
-  - timestamp: 9.762712
     noteType: 0
     laneIndex: 4
     stickDirection: 1
     buttonRow: 0
     holdDuration: 0
+  - timestamp: 9.762712
+    noteType: 1
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 1.5
   - timestamp: 10.576271
     noteType: 0
     laneIndex: 4
@@ -202,17 +201,17 @@ MonoBehaviour:
     buttonRow: 0
     holdDuration: 0
   - timestamp: 21.152542
-    noteType: 1
-    laneIndex: 5
-    stickDirection: 1
-    buttonRow: 1
-    holdDuration: 1.5
-  - timestamp: 21.152542
     noteType: 0
     laneIndex: 3
     stickDirection: 1
     buttonRow: 1
     holdDuration: 0
+  - timestamp: 21.152542
+    noteType: 1
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 1
+    holdDuration: 1.5
   - timestamp: 21.966103
     noteType: 0
     laneIndex: 3
@@ -1563,5 +1562,3 @@ MonoBehaviour:
     stickDirection: 1
     buttonRow: 0
     holdDuration: 0
-  bpmChanges: []
-  difficulty: 2.4815397

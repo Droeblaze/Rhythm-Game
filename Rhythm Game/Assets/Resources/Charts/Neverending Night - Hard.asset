@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 018f60730b9877b4083c6f451ae76f17, type: 3}
   m_Name: Neverending Night - Hard
   m_EditorClassIdentifier: Assembly-CSharp::ChartData
-  songAudio: {fileID: 8300000, guid: 79c9089222dd12b45aebae51c3bfdee0, type: 3}
-  bpm: 95
+  difficulty: 9.672805
   notes:
   - timestamp: 0
     noteType: 0
@@ -3591,5 +3590,3 @@ MonoBehaviour:
     stickDirection: 2
     buttonRow: 1
     holdDuration: 0
-  bpmChanges: []
-  difficulty: 9.672805
