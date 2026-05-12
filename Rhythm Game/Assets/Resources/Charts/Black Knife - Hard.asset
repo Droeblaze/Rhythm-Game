@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 018f60730b9877b4083c6f451ae76f17, type: 3}
   m_Name: Black Knife - Hard
   m_EditorClassIdentifier: Assembly-CSharp::ChartData
-  difficulty: 7.018244
+  difficulty: 8.736416
   notes:
   - timestamp: 0
     noteType: 0
@@ -411,17 +411,17 @@ MonoBehaviour:
     buttonRow: 0
     holdDuration: 0
   - timestamp: 8.135593
-    noteType: 0
-    laneIndex: 3
-    stickDirection: 1
-    buttonRow: 1
-    holdDuration: 0
-  - timestamp: 8.135593
     noteType: 1
     laneIndex: 5
     stickDirection: 1
     buttonRow: 1
     holdDuration: 1.5
+  - timestamp: 8.135593
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 1
+    holdDuration: 0
   - timestamp: 8.237288
     noteType: 0
     laneIndex: 3
@@ -1227,17 +1227,17 @@ MonoBehaviour:
     buttonRow: 0
     holdDuration: 0
   - timestamp: 24.40678
-    noteType: 1
-    laneIndex: 5
-    stickDirection: 1
-    buttonRow: 1
-    holdDuration: 0.5
-  - timestamp: 24.40678
     noteType: 0
     laneIndex: 4
     stickDirection: 1
     buttonRow: 1
     holdDuration: 0
+  - timestamp: 24.40678
+    noteType: 1
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 1
+    holdDuration: 0.5
   - timestamp: 24.61017
     noteType: 0
     laneIndex: 4

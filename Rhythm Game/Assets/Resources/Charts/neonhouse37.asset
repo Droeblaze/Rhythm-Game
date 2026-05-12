@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 018f60730b9877b4083c6f451ae76f17, type: 3}
   m_Name: neonhouse37
   m_EditorClassIdentifier: Assembly-CSharp::ChartData
-  songAudio: {fileID: 8300000, guid: 05f0054861b05d74586da82a505e0a9a, type: 3}
-  bpm: 118
+  difficulty: 4.6429
   notes:
   - timestamp: 0
     noteType: 0
@@ -269,15 +268,15 @@ MonoBehaviour:
     holdDuration: 0
   - timestamp: 21.355932
     noteType: 0
-    laneIndex: 2
-    stickDirection: 0
-    buttonRow: 1
-    holdDuration: 0
-  - timestamp: 21.355932
-    noteType: 0
     laneIndex: 3
     stickDirection: 1
     buttonRow: 0
+    holdDuration: 0
+  - timestamp: 21.355932
+    noteType: 0
+    laneIndex: 2
+    stickDirection: 0
+    buttonRow: 1
     holdDuration: 0
   - timestamp: 22.37288
     noteType: 0
@@ -443,12 +442,6 @@ MonoBehaviour:
     holdDuration: 0
   - timestamp: 33.559322
     noteType: 0
-    laneIndex: 5
-    stickDirection: 1
-    buttonRow: 0
-    holdDuration: 0
-  - timestamp: 33.559322
-    noteType: 0
     laneIndex: 4
     stickDirection: 1
     buttonRow: 0
@@ -459,6 +452,12 @@ MonoBehaviour:
     stickDirection: 1
     buttonRow: 0
     holdDuration: 0
+  - timestamp: 33.559322
+    noteType: 0
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
   - timestamp: 34.067795
     noteType: 0
     laneIndex: 3
@@ -521,6 +520,12 @@ MonoBehaviour:
     holdDuration: 0
   - timestamp: 35.59322
     noteType: 0
+    laneIndex: 4
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 35.59322
+    noteType: 0
     laneIndex: 5
     stickDirection: 1
     buttonRow: 0
@@ -531,15 +536,9 @@ MonoBehaviour:
     stickDirection: 1
     buttonRow: 0
     holdDuration: 0
-  - timestamp: 35.59322
-    noteType: 0
-    laneIndex: 4
-    stickDirection: 1
-    buttonRow: 0
-    holdDuration: 0
   - timestamp: 36.101696
     noteType: 0
-    laneIndex: 4
+    laneIndex: 3
     stickDirection: 1
     buttonRow: 0
     holdDuration: 0
@@ -551,7 +550,7 @@ MonoBehaviour:
     holdDuration: 0
   - timestamp: 36.101696
     noteType: 0
-    laneIndex: 3
+    laneIndex: 4
     stickDirection: 1
     buttonRow: 0
     holdDuration: 0
@@ -635,6 +634,18 @@ MonoBehaviour:
     holdDuration: 0
   - timestamp: 38.64407
     noteType: 0
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 38.64407
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 38.64407
+    noteType: 0
     laneIndex: 4
     stickDirection: 1
     buttonRow: 0
@@ -645,18 +656,6 @@ MonoBehaviour:
     stickDirection: 2
     buttonRow: 2
     holdDuration: 2
-  - timestamp: 38.64407
-    noteType: 0
-    laneIndex: 3
-    stickDirection: 1
-    buttonRow: 0
-    holdDuration: 0
-  - timestamp: 38.64407
-    noteType: 0
-    laneIndex: 5
-    stickDirection: 1
-    buttonRow: 0
-    holdDuration: 0
   - timestamp: 39.152542
     noteType: 0
     laneIndex: 4
@@ -713,13 +712,7 @@ MonoBehaviour:
     holdDuration: 0
   - timestamp: 40.677967
     noteType: 0
-    laneIndex: 5
-    stickDirection: 1
-    buttonRow: 0
-    holdDuration: 0
-  - timestamp: 40.677967
-    noteType: 0
-    laneIndex: 4
+    laneIndex: 3
     stickDirection: 1
     buttonRow: 0
     holdDuration: 0
@@ -731,7 +724,13 @@ MonoBehaviour:
     holdDuration: 1
   - timestamp: 40.677967
     noteType: 0
-    laneIndex: 3
+    laneIndex: 4
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 40.677967
+    noteType: 0
+    laneIndex: 5
     stickDirection: 1
     buttonRow: 0
     holdDuration: 0
@@ -785,18 +784,6 @@ MonoBehaviour:
     holdDuration: 1
   - timestamp: 43.728813
     noteType: 0
-    laneIndex: 3
-    stickDirection: 1
-    buttonRow: 0
-    holdDuration: 0
-  - timestamp: 43.728813
-    noteType: 1
-    laneIndex: 2
-    stickDirection: 2
-    buttonRow: 2
-    holdDuration: 1
-  - timestamp: 43.728813
-    noteType: 0
     laneIndex: 4
     stickDirection: 1
     buttonRow: 0
@@ -807,6 +794,18 @@ MonoBehaviour:
     stickDirection: 1
     buttonRow: 0
     holdDuration: 0
+  - timestamp: 43.728813
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 43.728813
+    noteType: 1
+    laneIndex: 2
+    stickDirection: 2
+    buttonRow: 2
+    holdDuration: 1
   - timestamp: 44.74576
     noteType: 0
     laneIndex: 5
@@ -856,6 +855,12 @@ MonoBehaviour:
     buttonRow: 0
     holdDuration: 0
   - timestamp: 46.77966
+    noteType: 0
+    laneIndex: 3
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 46.77966
     noteType: 1
     laneIndex: 0
     stickDirection: 2
@@ -873,9 +878,15 @@ MonoBehaviour:
     stickDirection: 1
     buttonRow: 0
     holdDuration: 0
-  - timestamp: 46.77966
+  - timestamp: 47.79661
     noteType: 0
-    laneIndex: 3
+    laneIndex: 5
+    stickDirection: 1
+    buttonRow: 0
+    holdDuration: 0
+  - timestamp: 47.79661
+    noteType: 0
+    laneIndex: 4
     stickDirection: 1
     buttonRow: 0
     holdDuration: 0
@@ -891,18 +902,6 @@ MonoBehaviour:
     stickDirection: 2
     buttonRow: 2
     holdDuration: 1
-  - timestamp: 47.79661
-    noteType: 0
-    laneIndex: 5
-    stickDirection: 1
-    buttonRow: 0
-    holdDuration: 0
-  - timestamp: 47.79661
-    noteType: 0
-    laneIndex: 4
-    stickDirection: 1
-    buttonRow: 0
-    holdDuration: 0
   - timestamp: 48.81356
     noteType: 0
     laneIndex: 3
@@ -2219,14 +2218,14 @@ MonoBehaviour:
     holdDuration: 0
   - timestamp: 109.32204
     noteType: 0
-    laneIndex: 4
-    stickDirection: 0
+    laneIndex: 1
+    stickDirection: 2
     buttonRow: 1
     holdDuration: 0
   - timestamp: 109.32204
     noteType: 0
-    laneIndex: 1
-    stickDirection: 2
+    laneIndex: 4
+    stickDirection: 0
     buttonRow: 1
     holdDuration: 0
   - timestamp: 109.57627
@@ -2841,5 +2840,3 @@ MonoBehaviour:
     stickDirection: 1
     buttonRow: 1
     holdDuration: 0
-  bpmChanges: []
-  difficulty: 3.425403

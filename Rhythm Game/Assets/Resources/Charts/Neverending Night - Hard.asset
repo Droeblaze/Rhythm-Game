@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 018f60730b9877b4083c6f451ae76f17, type: 3}
   m_Name: Neverending Night - Hard
   m_EditorClassIdentifier: Assembly-CSharp::ChartData
-  difficulty: 9.672805
+  difficulty: 11.835027
   notes:
   - timestamp: 0
     noteType: 0
@@ -1792,7 +1792,7 @@ MonoBehaviour:
     holdDuration: 0
   - timestamp: 45.473682
     noteType: 0
-    laneIndex: 3
+    laneIndex: 5
     stickDirection: 1
     buttonRow: 0
     holdDuration: 0
@@ -1804,7 +1804,7 @@ MonoBehaviour:
     holdDuration: 0
   - timestamp: 45.473682
     noteType: 0
-    laneIndex: 5
+    laneIndex: 3
     stickDirection: 1
     buttonRow: 0
     holdDuration: 0
