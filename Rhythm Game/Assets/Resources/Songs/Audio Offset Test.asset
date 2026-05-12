@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd42777ac8a85a445a6d6b78521356de, type: 3}
+  m_Name: Audio Offset Test
+  m_EditorClassIdentifier: Assembly-CSharp::SongContainer
+  title: Audio Offset Test
+  artist: Kata Beat Team
+  songArt: {fileID: 0}
+  songAudio: {fileID: 8300000, guid: 6849110a28df8d343b74893d87d95eb7, type: 3}
+  bpm: 120
+  bpmChanges: []
+  charts:
+  - {fileID: 11400000, guid: 67f998a4e91121a4faa0e73b29d31b4a, type: 2}
