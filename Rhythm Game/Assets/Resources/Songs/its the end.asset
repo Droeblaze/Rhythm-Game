@@ -12,10 +12,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd42777ac8a85a445a6d6b78521356de, type: 3}
   m_Name: its the end
   m_EditorClassIdentifier: Assembly-CSharp::SongContainer
-  title: 
-  artist: 
-  songArt: {fileID: 0}
-  songAudio: {fileID: 0}
-  bpm: 0
-  bpmChanges: []
-  charts: []
+  title: its the end
+  artist: Kata Beat Team
+  songArt: {fileID: -5271576677911118580, guid: 30a7db9f515115045b3a156dfac17db5, type: 3}
+  songAudio: {fileID: 8300000, guid: d9363ac40c615824c96191c26c99e32e, type: 3}
+  bpm: 155
+  bpmChanges:
+  - timestamp: 73.4
+    bpm: 180
+  charts:
+  - {fileID: 11400000, guid: 3897f9ada7968fe40b248e5e51d78353, type: 2}

@@ -43,6 +43,10 @@ public class JudgementDisplay : MonoBehaviour
         {
             currentCombo = 0;
         }
+
+        // Report combo to ScoreManager to track max combo
+        if (ScoreManager.Instance != null)
+            ScoreManager.Instance.ReportCombo(currentCombo);
         
         UpdateComboDisplay();
         

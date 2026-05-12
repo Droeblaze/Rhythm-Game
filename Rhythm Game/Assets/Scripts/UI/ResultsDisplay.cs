@@ -1,5 +1,5 @@
-using UnityEngine;
 using TMPro;
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class ResultsDisplay : MonoBehaviour
@@ -12,6 +12,11 @@ public class ResultsDisplay : MonoBehaviour
     public TextMeshProUGUI okCountText;
     public TextMeshProUGUI missCountText;
     public TextMeshProUGUI totalNotesText;
+    public TextMeshProUGUI songNameText;
+    public TextMeshProUGUI chartDifficultyText;
+    public TextMeshProUGUI maxComboText;
+    public TextMeshProUGUI pointsText;
+    public TextMeshProUGUI rankText;
 
     [Header("Navigation")]
     public string mainMenuSceneName = "MainMenu";
@@ -43,6 +48,17 @@ public class ResultsDisplay : MonoBehaviour
         return false;
     }
 
+    string GetRank(float accuracy)
+    {
+        if (accuracy >= 100f)  return "S+";
+        if (accuracy >= 98f)   return "S";
+        if (accuracy >= 95f)   return "A+";
+        if (accuracy >= 90f)   return "A";
+        if (accuracy >= 80f)   return "B";
+        if (accuracy >= 70f)   return "C";
+        return "F";
+    }
+
     void DisplayResults()
     {
         if (ScoreManager.Instance == null)
@@ -61,10 +77,14 @@ public class ResultsDisplay : MonoBehaviour
         int okCount = ScoreManager.Instance.GetOkCount();
         int missCount = ScoreManager.Instance.GetMissCount();
         int totalNotes = ScoreManager.Instance.GetTotalNotesProcessed();
+        int maxCombo = ScoreManager.Instance.GetMaxCombo();
+        string songTitle = ScoreManager.Instance.GetSongTitle();
+        float chartDifficulty = ScoreManager.Instance.GetChartDifficulty();
+        float points = Mathf.Round((accuracy / 100f) * chartDifficulty * 100f) / 100f;
+        string rank = GetRank(accuracy);
 
-        Debug.Log($"Results - Accuracy: {accuracy:F2}%, Perfect: {perfectCount}, Great: {greatCount}, Good: {goodCount}, OK: {okCount}, Miss: {missCount}, Total: {totalNotes}");
+        Debug.Log($"Results - Accuracy: {accuracy:F2}%, Perfect: {perfectCount}, Great: {greatCount}, Good: {goodCount}, OK: {okCount}, Miss: {missCount}, Total: {totalNotes}, Max Combo: {maxCombo}, Song: {songTitle}, Difficulty: {chartDifficulty:F1}, Points: {points:F2}, Rank: {rank}");
 
-        // Display results
         if (accuracyText != null)
         {
             accuracyText.text = $"{accuracy:F2}%";
@@ -76,64 +96,63 @@ public class ResultsDisplay : MonoBehaviour
         }
 
         if (perfectCountText != null)
-        {
             perfectCountText.text = $"Perfect: {perfectCount}";
-        }
         else
-        {
             Debug.LogError("perfectCountText is null!");
-        }
 
         if (greatCountText != null)
-        {
             greatCountText.text = $"Great: {greatCount}";
-        }
         else
-        {
             Debug.LogError("greatCountText is null!");
-        }
 
         if (goodCountText != null)
-        {
             goodCountText.text = $"Good: {goodCount}";
-        }
         else
-        {
             Debug.LogError("goodCountText is null!");
-        }
 
         if (okCountText != null)
-        {
             okCountText.text = $"OK: {okCount}";
-        }
         else
-        {
             Debug.LogError("okCountText is null!");
-        }
 
         if (missCountText != null)
-        {
             missCountText.text = $"Miss: {missCount}";
-        }
         else
-        {
             Debug.LogError("missCountText is null!");
-        }
 
         if (totalNotesText != null)
-        {
             totalNotesText.text = $"Total Notes: {totalNotes}";
-        }
         else
-        {
             Debug.LogError("totalNotesText is null!");
-        }
+
+        if (songNameText != null)
+            songNameText.text = songTitle;
+        else
+            Debug.LogError("songNameText is null!");
+
+        if (chartDifficultyText != null)
+            chartDifficultyText.text = $"Difficulty: {chartDifficulty:F1}";
+        else
+            Debug.LogError("chartDifficultyText is null!");
+
+        if (maxComboText != null)
+            maxComboText.text = $"Max Combo: {maxCombo}";
+        else
+            Debug.LogError("maxComboText is null!");
+
+        if (pointsText != null)
+            pointsText.text = $"Points: {points:F2}";
+        else
+            Debug.LogError("pointsText is null!");
+
+        if (rankText != null)
+            rankText.text = rank;
+        else
+            Debug.LogError("rankText is null!");
     }
 
-    public void ReturnToMainMenu()
+    void ReturnToMainMenu()
     {
-        // Don't reset stats here - they'll be reset when starting a new gameplay session
-        // This allows the results to persist until the next game starts
         SceneManager.LoadScene(mainMenuSceneName);
     }
 }

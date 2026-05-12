@@ -59,6 +59,12 @@ public class NoteSpawner : MonoBehaviour
             {
                 chartData = selectedChart;
             }
+
+            // Store song info in ScoreManager for the results screen
+            if (ScoreManager.Instance != null && songContainer != null && chartData != null)
+            {
+                ScoreManager.Instance.SetSongInfo(songContainer.title, chartData.difficulty);
+            }
         }
 
         if (songContainer == null)

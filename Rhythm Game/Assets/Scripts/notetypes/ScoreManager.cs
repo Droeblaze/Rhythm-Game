@@ -32,6 +32,13 @@ public class ScoreManager : MonoBehaviour
     // Current accuracy
     private float currentAccuracy = 0f;
 
+    // Max combo
+    private int maxCombo = 0;
+
+    // Song info
+    private string songTitle = "";
+    private float chartDifficulty = 0f;
+
     // Singleton instance
     public static ScoreManager Instance { get; private set; }
 
@@ -103,6 +110,27 @@ public class ScoreManager : MonoBehaviour
         totalNotesProcessed++;
         CalculateAccuracy();
         UpdateUI();
+    }
+
+    /// <summary>
+    /// Reports the current combo to update the max combo record.
+    /// Call this from JudgementDisplay whenever the combo changes.
+    /// </summary>
+    /// <param name="combo">The current combo value.</param>
+    public void ReportCombo(int combo)
+    {
+        if (combo > maxCombo)
+            maxCombo = combo;
+    }
+
+    /// <summary>
+    /// Stores the song title and chart difficulty for display on the results screen.
+    /// Call this from NoteSpawner after loading the song and chart.
+    /// </summary>
+    public void SetSongInfo(string title, float difficulty)
+    {
+        songTitle = title;
+        chartDifficulty = difficulty;
     }
 
     /// <summary>
@@ -203,6 +231,7 @@ public class ScoreManager : MonoBehaviour
         missCount = 0;
         totalNotesProcessed = 0;
         currentAccuracy = 0f;
+        maxCombo = 0;
         UpdateUI();
     }
 
@@ -214,4 +243,7 @@ public class ScoreManager : MonoBehaviour
     public int GetMissCount() => missCount;
     public int GetTotalNotesProcessed() => totalNotesProcessed;
     public float GetAccuracy() => currentAccuracy;
+    public int GetMaxCombo() => maxCombo;
+    public string GetSongTitle() => songTitle;
+    public float GetChartDifficulty() => chartDifficulty;
 }
