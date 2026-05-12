@@ -623,74 +623,112 @@ public class ChartEditor : EditorWindow
         if (currentSong.bpm <= 0) return;
 
         float totalTime = audioClip != null ? audioClip.length : 60f;
-        float totalBeats = currentSong.TimeToBeat(totalTime);
-
-        // Determine visible Y range to only draw visible grid lines
         float visibleTop = scrollPosition.y;
         float visibleBottom = scrollPosition.y + position.height;
 
-        // Convert visible range to beat range
-        float visibleBeatStart = visibleTop / (beatHeight * zoom);
-        float visibleBeatEnd = visibleBottom / (beatHeight * zoom);
+        var segments = GetBpmSegments(totalTime);
 
-        // Calculate subdivision size in beats
-        float subdivisionSize = 1f / beatDivision;
-
-        // Snap to subdivision boundaries for the visible range
-        int startSubdiv = Mathf.FloorToInt(visibleBeatStart / subdivisionSize);
-        int endSubdiv = Mathf.CeilToInt(visibleBeatEnd / subdivisionSize);
-
-        // Clamp to valid range
-        startSubdiv = Mathf.Max(0, startSubdiv);
-        float maxSubdivisions = totalBeats / subdivisionSize;
-        endSubdiv = Mathf.Min(endSubdiv, Mathf.CeilToInt(maxSubdivisions));
-
-        for (int s = startSubdiv; s <= endSubdiv; s++)
+        foreach (var (segStart, segEnd, segBpm) in segments)
         {
-            float beat = s * subdivisionSize;
-            float y = beat * beatHeight * zoom;
+            float secondsPerBeat = 60f / segBpm;
+            float subdivisionSeconds = secondsPerBeat / beatDivision;
+            int totalSubdivs = Mathf.CeilToInt((segEnd - segStart) / subdivisionSeconds);
 
-            // Determine line importance
-            bool isMeasureLine = Mathf.Approximately(beat % 4f, 0f) || beat % 4f < 0.01f;
-            bool isBeatLine = !isMeasureLine && (Mathf.Approximately(beat % 1f, 0f) || beat % 1f < 0.01f);
-            bool isTripletLine = (beatDivision % 3 == 0) && !isBeatLine && !isMeasureLine;
+            // Skip segments entirely outside the visible area
+            float segStartY = TimeToY(segStart);
+            float segEndY   = TimeToY(segEnd);
+            if (segEndY < visibleTop || segStartY > visibleBottom) continue;
 
-            Color lineColor;
-            float lineHeight;
+            // Cull to visible subdivision range within this segment
+            int startSubdiv = 0;
+            int endSubdiv   = totalSubdivs;
 
-            if (isMeasureLine)
+            if (segStartY < visibleTop)
             {
-                lineColor = new Color(1, 1, 1, 0.5f);
-                lineHeight = 2;
+                float localVisible = YToTime(visibleTop) - segStart;
+                startSubdiv = Mathf.Max(0, Mathf.FloorToInt(localVisible / subdivisionSeconds) - 1);
             }
-            else if (isBeatLine)
+            if (segEndY > visibleBottom)
             {
-                lineColor = new Color(1, 1, 1, 0.3f);
-                lineHeight = 1;
-            }
-            else if (isTripletLine)
-            {
-                lineColor = new Color(0.6f, 0.4f, 1f, 0.2f);
-                lineHeight = 1;
-            }
-            else
-            {
-                lineColor = new Color(1, 1, 1, 0.1f);
-                lineHeight = 1;
+                float localVisible = YToTime(visibleBottom) - segStart;
+                endSubdiv = Mathf.Min(totalSubdivs, Mathf.CeilToInt(localVisible / subdivisionSeconds) + 1);
             }
 
-            EditorGUI.DrawRect(new Rect(0, y, laneWidth * 6, lineHeight), lineColor);
-
-            // Draw beat/measure numbers on major lines
-            if (isMeasureLine || isBeatLine)
+            for (int s = startSubdiv; s <= endSubdiv; s++)
             {
-                int measure = Mathf.FloorToInt(beat / 4f) + 1;
-                float beatInMeasure = (beat % 4f) + 1f;
-                string label = isMeasureLine ? $"M{measure}" : $"{beatInMeasure:F0}";
-                Rect labelRect = new Rect(laneWidth * 6 + 4, y - 8, 40, 16);
-                GUI.Label(labelRect, label, EditorStyles.miniLabel);
+                float time = segStart + s * subdivisionSeconds;
+                if (time > segEnd + subdivisionSeconds * 0.5f) break;
+
+                float y = TimeToY(time);
+
+                // Classify line type based on local beat position within this segment
+                bool isMeasureLine = s % (beatDivision * 4) == 0;
+                bool isBeatLine    = !isMeasureLine && s % beatDivision == 0;
+                bool isTripletLine = beatDivision % 3 == 0 && !isBeatLine && !isMeasureLine;
+
+                Color lineColor;
+                float lineHeight;
+
+                if (isMeasureLine)
+                {
+                    lineColor  = new Color(1f, 1f, 1f, 0.5f);
+                    lineHeight = 2f;
+                }
+                else if (isBeatLine)
+                {
+                    lineColor  = new Color(1f, 1f, 1f, 0.3f);
+                    lineHeight = 1f;
+                }
+                else if (isTripletLine)
+                {
+                    lineColor  = new Color(0.6f, 0.4f, 1f, 0.2f);
+                    lineHeight = 1f;
+                }
+                else
+                {
+                    lineColor  = new Color(1f, 1f, 1f, 0.1f);
+                    lineHeight = 1f;
+                }
+
+                EditorGUI.DrawRect(new Rect(0, y, laneWidth * 6, lineHeight), lineColor);
+
+                if (isMeasureLine || isBeatLine)
+                {
+                    int measure       = s / (beatDivision * 4) + 1;
+                    int beatInMeasure = s / beatDivision % 4 + 1;
+                    string label      = isMeasureLine ? $"M{measure}" : $"{beatInMeasure}";
+                    GUI.Label(new Rect(laneWidth * 6 + 4, y - 8, 40, 16), label, EditorStyles.miniLabel);
+                }
             }
         }
+    }
+
+    /// <summary>
+    /// Snaps a time value to the nearest grid subdivision within the active BPM segment.
+    /// Phase resets at each BPM change so snapped positions always align with the local grid.
+    /// </summary>
+    float SnapTimeToGrid(float time)
+    {
+        float segmentStartTime = 0f;
+        float segmentBpm       = currentSong.bpm;
+
+        if (currentSong.bpmChanges != null)
+        {
+            foreach (BpmChangeData change in currentSong.bpmChanges)
+            {
+                if (change.timestamp <= time)
+                {
+                    segmentStartTime = change.timestamp;
+                    segmentBpm       = change.bpm;
+                }
+                else break;
+            }
+        }
+
+        float subdivisionSeconds = 60f / segmentBpm / beatDivision;
+        float localTime          = time - segmentStartTime;
+        float snappedLocal       = Mathf.Round(localTime / subdivisionSeconds) * subdivisionSeconds;
+        return segmentStartTime + snappedLocal;
     }
 
     void DrawBpmChangeMarkers()
@@ -854,19 +892,6 @@ public class ChartEditor : EditorWindow
         if (currentSong == null || currentSong.bpm <= 0) return 0;
         float beats = y / (beatHeight * zoom);
         return currentSong.BeatToTime(beats);
-    }
-
-    /// <summary>
-    /// Snaps a time value to the nearest grid subdivision in beat-space.
-    /// Works correctly across BPM changes because it converts to beats,
-    /// snaps, then converts back to time.
-    /// </summary>
-    float SnapTimeToGrid(float time)
-    {
-        float beat = currentSong.TimeToBeat(time);
-        float subdivisionSize = 1f / beatDivision;
-        float snappedBeat = Mathf.Round(beat / subdivisionSize) * subdivisionSize;
-        return currentSong.BeatToTime(snappedBeat);
     }
 
     void SeekTo(float time)
@@ -1297,6 +1322,24 @@ public class ChartEditor : EditorWindow
         }
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
