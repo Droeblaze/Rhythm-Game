@@ -12,10 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd42777ac8a85a445a6d6b78521356de, type: 3}
   m_Name: Audio Offset Test
   m_EditorClassIdentifier: Assembly-CSharp::SongContainer
-  title: 
-  artist: 
+  title: Audio Offset Test
+  artist: Kata Beat Team
   songArt: {fileID: 0}
-  songAudio: {fileID: 0}
-  bpm: 0
+  songAudio: {fileID: 8300000, guid: 6849110a28df8d343b74893d87d95eb7, type: 3}
+  bpm: 120
   bpmChanges: []
-  charts: []
+  charts:
+  - {fileID: 11400000, guid: 67f998a4e91121a4faa0e73b29d31b4a, type: 2}

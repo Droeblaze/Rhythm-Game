@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 018f60730b9877b4083c6f451ae76f17, type: 3}
   m_Name: ClickTrack
   m_EditorClassIdentifier: Assembly-CSharp::ChartData
-  songAudio: {fileID: 8300000, guid: 6849110a28df8d343b74893d87d95eb7, type: 3}
-  bpm: 120
+  difficulty: 2.4386313
   notes:
   - timestamp: 0
     noteType: 0
@@ -43,43 +42,25 @@ MonoBehaviour:
     noteType: 0
     laneIndex: 3
     stickDirection: 1
-    buttonRow: 0
+    buttonRow: 1
     holdDuration: 0
   - timestamp: 2.5
     noteType: 0
     laneIndex: 3
     stickDirection: 1
-    buttonRow: 0
+    buttonRow: 1
     holdDuration: 0
   - timestamp: 3
     noteType: 0
     laneIndex: 3
     stickDirection: 1
-    buttonRow: 0
+    buttonRow: 1
     holdDuration: 0
   - timestamp: 3.5
     noteType: 0
     laneIndex: 3
     stickDirection: 1
-    buttonRow: 0
-    holdDuration: 0
-  - timestamp: 3.625
-    noteType: 0
-    laneIndex: 3
-    stickDirection: 1
-    buttonRow: 0
-    holdDuration: 0
-  - timestamp: 3.75
-    noteType: 0
-    laneIndex: 3
-    stickDirection: 1
-    buttonRow: 0
-    holdDuration: 0
-  - timestamp: 3.875
-    noteType: 0
-    laneIndex: 3
-    stickDirection: 1
-    buttonRow: 0
+    buttonRow: 1
     holdDuration: 0
   - timestamp: 4
     noteType: 1
@@ -117,5 +98,3 @@ MonoBehaviour:
     stickDirection: 2
     buttonRow: 0
     holdDuration: 1
-  bpmChanges: []
-  difficulty: 1.716916

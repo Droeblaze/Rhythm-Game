@@ -270,17 +270,20 @@ public class InputManager : MonoBehaviour
         Debug.Log($"Lane {note.data.laneIndex} Hit! Judgement: {judgement} (timing: {timing:F3}s)");
 
         if (judgementDisplay != null)
-        {
             judgementDisplay.ShowJudgement(judgement);
-        }
 
         if (ScoreManager.Instance != null)
-        {
             ScoreManager.Instance.RecordJudgement(judgement);
-        }
 
         notesInLane[note.data.laneIndex].Remove(note);
-        note.MarkAsHit();
+
+        // FIX: A Hold note hit with "Miss" timing must NOT call MarkAsHit(), which would set
+        // isHoldActive=true without registering in activeHoldNotes, permanently pinning the note.
+        // Instead, treat it like a missed note so it scrolls off cleanly.
+        if (note.data.noteType == NoteType.Hold)
+            note.MarkAsMiss();
+        else
+            note.MarkAsHit();
     }
 
     // ??? Hold Notes ????????????????????????????????????????????
@@ -338,6 +341,34 @@ public class InputManager : MonoBehaviour
                     FailHold(note, lane);
                 }
                 // else: still within grace period, hold stays alive
+            }
+        }
+
+        // Safety net: catch any hold note that has isHoldActive=true but is not tracked in
+        // activeHoldNotes. This should not normally occur, but guards against edge cases
+        // causing a note to be permanently pinned at the judgement line.
+        foreach (var kvp in notesInLane)
+        {
+            int lane = kvp.Key;
+            List<NoteVisual> orphans = null;
+
+            foreach (NoteVisual note in kvp.Value)
+            {
+                if (note != null && note.isHoldActive &&
+                    (!activeHoldNotes.ContainsKey(lane) || activeHoldNotes[lane] != note))
+                {
+                    if (orphans == null) orphans = new List<NoteVisual>();
+                    orphans.Add(note);
+                }
+            }
+
+            if (orphans != null)
+            {
+                foreach (NoteVisual orphan in orphans)
+                {
+                    Debug.LogWarning($"[InputManager] Orphaned hold note on lane {lane} — force failing.");
+                    FailHold(orphan, lane);
+                }
             }
         }
     }
