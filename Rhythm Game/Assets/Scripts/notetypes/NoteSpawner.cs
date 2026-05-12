@@ -33,9 +33,16 @@ public class NoteSpawner : MonoBehaviour
     private float songTime = 0f;
     private int nextNoteIndex = 0;
     private List<GameObject> activeNotes = new List<GameObject>();
-    private float countdownTimer = 0f;
     private bool audioStarted = false;
     private bool songFinished = false;
+
+    // Fix 1: snapshot-based countdown to avoid deltaTime accumulation drift
+    private float countdownStartTime = -1f;
+
+    // Fix 3: DSP time tracking for sub-frame accurate song clock
+    private double dspTimeAtStart = 0;
+    private double lastKnownDspTime = 0;
+    private float realtimeAtLastDspTick = 0f;
 
     void Start()
     {
@@ -102,7 +109,6 @@ public class NoteSpawner : MonoBehaviour
         // Sort notes by timestamp
         chartData.SortNotes();
 
-        countdownTimer = 0f;
         audioStarted = false;
         songFinished = false;
     }
@@ -114,13 +120,17 @@ public class NoteSpawner : MonoBehaviour
         // Handle countdown before audio starts
         if (!audioStarted)
         {
-            countdownTimer += Time.deltaTime;
+            // Fix 1: use a start-time snapshot instead of accumulating deltaTime
+            if (countdownStartTime < 0f)
+                countdownStartTime = Time.realtimeSinceStartup;
+
+            float elapsed = Time.realtimeSinceStartup - countdownStartTime;
 
             // Song time is negative during countdown
-            songTime = countdownTimer - audioStartDelay;
+            songTime = elapsed - audioStartDelay;
 
             // Start audio when countdown finishes, accounting for audio offset
-            if (countdownTimer >= audioStartDelay + audioOffset)
+            if (elapsed >= audioStartDelay + audioOffset)
             {
                 StartSong();
                 audioStarted = true;
@@ -128,8 +138,17 @@ public class NoteSpawner : MonoBehaviour
         }
         else
         {
-            // CRITICAL: Use audioSource.time for accurate rhythm sync, adjusted by offset
-            songTime = audioSource.time + audioOffset;
+            // Fix 3: interpolate between DSP ticks using realtime for smooth per-frame movement
+            // while staying anchored to the accurate DSP clock.
+            double currentDsp = AudioSettings.dspTime;
+            if (currentDsp != lastKnownDspTime)
+            {
+                lastKnownDspTime = currentDsp;
+                realtimeAtLastDspTick = Time.realtimeSinceStartup;
+            }
+
+            float timeSinceLastTick = Time.realtimeSinceStartup - realtimeAtLastDspTick;
+            songTime = (float)(lastKnownDspTime - dspTimeAtStart) + timeSinceLastTick + audioOffset;
 
             // Check if song has finished
             if (!songFinished && audioSource != null && !audioSource.isPlaying && audioStarted)
@@ -236,8 +255,20 @@ public class NoteSpawner : MonoBehaviour
                 continue;
             }
 
-            // Normal scrolling for all other notes
-            activeNotes[i].transform.position += Vector3.down * scrollSpeed * Time.deltaTime;
+            // Fix 2: pin note Y directly to the song clock instead of integrating deltaTime,
+            // keeping visual position perfectly in sync with audio regardless of frame rate.
+            if (noteVisual != null && noteVisual.data != null)
+            {
+                float timeUntilHit = noteVisual.data.timestamp - songTime;
+                Vector3 pos = activeNotes[i].transform.position;
+                pos.y = judgementLine.position.y + (timeUntilHit * scrollSpeed);
+                activeNotes[i].transform.position = pos;
+            }
+            else
+            {
+                // Fallback for notes without NoteVisual
+                activeNotes[i].transform.position += Vector3.down * scrollSpeed * Time.deltaTime;
+            }
 
             // Only mark as miss once the note has passed beyond the miss window
             float distancePastLine = judgementLine.position.y - activeNotes[i].transform.position.y;
@@ -261,7 +292,10 @@ public class NoteSpawner : MonoBehaviour
     {
         if (audioSource != null && audioSource.clip != null)
         {
-            audioSource.Play();
+            // Fix 3: schedule playback at the current DSP time and record it
+            // so songTime can be derived from the same high-resolution clock.
+            dspTimeAtStart = AudioSettings.dspTime;
+            audioSource.PlayScheduled(dspTimeAtStart);
         }
     }
 
